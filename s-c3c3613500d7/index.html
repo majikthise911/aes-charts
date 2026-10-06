@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
+<title>Monarch Solar: process map and gates</title>
+<style>
+:root{
+  --bg:#0b0f14; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --lane:#0f1620; --lane2:#0b0f14;
+  --card:#111827; --panel:#0f1620; --edge:#475569; --hi:#60a5fa; --up:#fbbf24;
+  --done:#22c55e; --donebg:#0c2a18; --now:#3b82f6; --nowbg:#0d2244; --fut:#64748b;
+  --open:#f97316; --openbg:#341a08; --hard:#ef4444; --hardbg:#3a0d0d; --soft:#f59e0b; --softbg:#352506;
+  --ms:#e2e8f0; --today:#38bdf8;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{display:flex;flex-direction:column;margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;overflow:hidden}
+header{padding:10px 16px 2px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12.5px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px}
+.bar b{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+button{font:inherit;font-size:13px;border:1px solid #334155;background:var(--card);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--hi)}
+button.on{background:var(--hi);border-color:var(--hi);color:#0b0f14}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:0 16px 7px;color:var(--muted);font-size:12px;align-items:center}
+.sw{display:inline-block;width:14px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:2px solid}
+.zoom{margin-left:auto;display:flex;gap:4px;align-items:center}
+.zoom button{padding:3px 10px}
+main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
+#wrap{flex:1;overflow:hidden;min-width:0;position:relative;cursor:grab;touch-action:none;background:var(--bg)}
+#wrap.drag{cursor:grabbing}
+svg{display:block;width:100%;height:100%}
+#panel{width:390px;flex:none;overflow:auto;padding:14px 16px 20px;background:var(--panel);border-left:1px solid var(--line)}
+@media (max-width:900px){main{flex-direction:column}#panel{width:auto;max-height:42vh;border-left:0;border-top:1px solid var(--line)} h1{font-size:15px} .sub{display:none} .bar,.legend{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none} .legend{font-size:11px;gap:9px} .legend .zoom{position:sticky;right:0;background:var(--bg);padding-left:6px} button{padding:4px 10px;font-size:12.5px} header{padding:8px 12px 0}}
+#panel h2{font-size:16px;margin:0 0 4px}
+#panel .meta{color:var(--muted);font-size:12.5px;margin-bottom:8px}
+#panel ul{margin:4px 0 10px;padding-left:18px}
+#panel li{margin:4px 0}
+#panel .k{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:12px}
+#panel .src{color:var(--muted);font-style:italic;font-size:12.5px;margin-top:12px}
+#panel .conf{border-left:3px solid var(--open);background:#1a1208;padding:6px 10px;border-radius:4px;margin:6px 0;font-size:13px}
+#panel p{margin:0 0 8px}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;border:1.5px solid;margin-right:6px;text-transform:uppercase;letter-spacing:.04em}
+.lanebg{fill:var(--lane)} .lanebg.alt{fill:var(--lane2)}
+.lanelbl{fill:var(--muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.stage line{stroke:#334155;stroke-width:1.2;stroke-dasharray:3 5}
+.stage rect{fill:#1e293b;stroke:#334155}
+.stage text{fill:var(--ink);font-weight:700;font-size:12px}
+.stage .d{fill:var(--muted);font-weight:400;font-size:11px}
+.stage{cursor:pointer}
+.stage.sel rect{fill:#1e3a5f;stroke:var(--hi)}
+.node{cursor:pointer}
+.node text{fill:var(--ink);font-size:12.5px}
+.node text.t{font-weight:700}
+.node text.d{fill:var(--muted);font-size:11.5px}
+.node text.tag{font-size:9.5px;font-weight:800;letter-spacing:.06em}
+.node .box{stroke-width:1.6}
+.node.done .box{fill:var(--donebg);stroke:var(--done)} .node.done .tag{fill:var(--done)}
+.node.now .box{fill:var(--nowbg);stroke:var(--now);stroke-width:3} .node.now .tag{fill:var(--now)}
+.node.future .box{fill:transparent;stroke:var(--fut);stroke-dasharray:6 4} .node.future .tag{fill:var(--fut)}
+.node.open .box{fill:var(--openbg);stroke:var(--open);stroke-width:2} .node.open .tag{fill:var(--open)}
+.node.hard .box{fill:var(--hardbg);stroke:var(--hard);stroke-width:3} .node.hard .tag{fill:var(--hard)}
+.node.soft .box{fill:var(--softbg);stroke:var(--soft);stroke-width:2} .node.soft .tag{fill:var(--soft)}
+.node.ms .box{fill:var(--ms);stroke:var(--ms)} .node.ms text{fill:#0b0f14} .node.ms .tag{fill:#334155}
+.node:hover .box{filter:brightness(1.35)}
+.node.sel .box{stroke:var(--hi)!important;stroke-width:3.5!important;stroke-dasharray:none!important}
+.cflag{fill:var(--open)} .cflagt{fill:#0b0f14!important;font-size:10px!important;font-weight:900}
+.edge{fill:none;stroke:var(--edge);stroke-width:1.5;opacity:.7}
+.edge.hardE{stroke:var(--hard);stroke-width:3;opacity:.85}
+.edge.weak{stroke-dasharray:5 4}
+.today line{stroke:var(--today);stroke-width:2;stroke-dasharray:6 4}
+.today rect{fill:var(--today)} .today text{fill:#0b0f14;font-weight:800;font-size:11.5px}
+.dim .node,.dim .stage{opacity:.2}
+.dim .edge{opacity:.07}
+.dim .node.on,.dim .node.sel{opacity:1}
+.dim .edge.on{opacity:1;stroke:var(--hi);stroke-width:2.6}
+.dim .edge.onup{opacity:1;stroke:var(--up);stroke-width:2.6}
+.dim .edge.hardE.on,.dim .edge.hardE.onup{stroke-width:3.5}
+</style>
+</head>
+<body>
+<header>
+  <h1>Monarch Solar: where we are, what depends on what, key gates</h1>
+  <div class="sub">Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage for dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave a hard gate. An orange &quot;!&quot; marks an open conflict.</div>
+</header>
+<div class="bar" id="stories"><b>Stories</b></div>
+<div class="legend">
+  <span><span class="sw" style="background:var(--donebg);border-color:var(--done)"></span>Done</span>
+  <span><span class="sw" style="background:var(--nowbg);border-color:var(--now)"></span>In progress</span>
+  <span><span class="sw" style="background:transparent;border-color:var(--fut);border-style:dashed"></span>Future</span>
+  <span><span class="sw" style="background:var(--openbg);border-color:var(--open)"></span>Open / unresolved</span>
+  <span><span class="sw" style="background:var(--hardbg);border-color:var(--hard)"></span>Hard gate</span>
+  <span><span class="sw" style="background:var(--softbg);border-color:var(--soft)"></span>Soft gate</span>
+  <span><span class="sw" style="background:var(--ms);border-color:var(--ms)"></span>Fixed milestone</span>
+  <span><span class="sw" style="background:var(--hi);border-color:var(--hi)"></span>drives (downstream)</span>
+  <span><span class="sw" style="background:var(--up);border-color:var(--up)"></span>needs (upstream)</span>
+  <span class="zoom"><button id="zo">-</button><button id="zi">+</button><button id="fit">Fit</button><button id="here">Today</button></span>
+</div>
+<main><div id="wrap"><svg id="map"><g id="vp"></g></svg></div><div id="panel"></div></main>
+
+<script>
+const D = {"title": "Monarch Solar: process map and gates", "h1": "Monarch Solar: where we are, what depends on what, key gates", "sub": "Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage for dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave a hard gate. An orange \"!\" marks an open conflict.", "today": {"col": 3, "label": "YOU ARE HERE: Tue 10/6"}, "stages": [{"id": "s1", "label": "1. 10% redesign", "d": "May to Jun 2026", "why": "Updated 10% design and constraints map for the relaunch. Design pipeline: constraints map 5/21, 10% + PVsyst due 6/5; updated 10% change summary 6/10."}, {"id": "s2", "label": "2. Target price + relaunch", "d": "Jun to Jul 2026", "why": "Estimating update about 78 cents/W (6/18), target price email sent 6/24. RFP relaunch targeted 6/17; bid period 70 calendar days, project notice complete 7/01."}, {"id": "s3", "label": "3. Qcells bid + RFIs", "d": "Sep to Oct 2026", "why": "Qcells RFI meetings, Qcells 30% package finished, Qcells proposal held for 10/5 but pricing likely slips."}, {"id": "s4", "label": "4. Second source", "d": "Sep to Oct 2026", "why": "Exclusivity with Qcells has ended. Early dataroom release to Mortenson and Moss, going out to mccarthy, bid narrative redo, CE exhibit templates."}, {"id": "s5", "label": "5. Price check", "d": "after bids", "why": "Bidders call 78 cents very tight. Check the target price is 78 cents."}, {"id": "s6", "label": "6. EPCA", "d": "gated", "why": "Cannot sign EPC without GIA (2026.01.14). Signing EPCA depends on export capability (RAS) being resolved."}, {"id": "s7", "label": "7. Construction + COD", "d": "COD Mar 2029 (planning)", "why": "Construction window 36 months from GIA execution. COD March 2029 planning assumption, P6 June 2029, likely PPA extension of 6 months to 1 year."}], "lanes": [{"id": "eng", "label": "Design + engineering"}, {"id": "epc", "label": "EPC bid + contract"}, {"id": "ic", "label": "Interconnection + RAS"}, {"id": "com", "label": "Commercial + price"}, {"id": "build", "label": "Build + COD"}], "nodes": [{"id": "d10", "lane": "eng", "col": 0, "st": "done", "t": "Updated 10% design", "d": "relaunch basis, change summary 6/10", "det": ["10% design deliverables expected 6/8.", "Updated 10% design change summary dated 6/10 is the relaunch basis.", "Design update cycle per the readiness review: updated 10% flows to constraints map, estimating, target price, bid narrative, RFP release."], "src": "Monarch Pillars, Engineering & Studies 2026.06.08, 2026.06.10; Red Flags 2026.04.01"}, {"id": "gpr", "lane": "eng", "col": 0, "st": "open", "t": "GPR / capped wells gap", "d": "info still coming, noted in bid narrative", "det": ["6/26: GPR via an ECT + Bloodhound hybrid approach.", "6/18: capped-wells GPR information gap addressed in the bid narrative. Confidence there will not be much change, but the info is still coming."], "src": "Monarch Pillars, Engineering 2026.06.26; Red Flags 2026.06.18"}, {"id": "q30", "lane": "eng", "col": 2, "st": "done", "t": "Qcells 30% package", "d": "finished, Qcells estimating on it", "det": ["30% package finished the week before 2026.09.25; Qcells estimating team working on it.", "Qcells was contracted for the 30% design only, under an LNTP (decision 2026.01.21)."], "src": "Monarch RN 2026.09.25; Pillars Contracting (LNTP decision 2026.01.21)"}, {"id": "rfi", "lane": "eng", "col": 2, "st": "now", "t": "Open RFIs 31, 37, 55", "d": "Xcel substation drawings, water usage", "det": ["Push on RFIs 31 and 37 with Qcells: the Xcel substation drawings; structural to make sure the gen tie is aligned (line cuts off in the Doc).", "RFI 55 reopened on water usage (2026.09.25). Update the RFI tracker with Kirsta's note from the 29th.", "RFI notes and tracker sent via Procore 2026.09.15; SME outreach still open."], "src": "Monarch RN 2026.09.15, 2026.09.25, 2026.10.01, 2026.10.05"}, {"id": "rfp", "lane": "epc", "col": 1, "st": "done", "t": "RFP relaunch package", "d": "70-day bid period, notice done 7/01", "det": ["Relaunch targeted 6/17 (set 2026.05.07).", "Bid narrative based on the Grand Mayes version; exhibit redlines against precedent.", "Bid period set at 70 calendar days. Project notice complete (2026.07.01)."], "src": "Monarch Pillars, Contracting 2026.05.07 to 2026.07.01"}, {"id": "qprop", "lane": "epc", "col": 2, "st": "open", "t": "Qcells proposal", "d": "held for 10/5, likely the 12th or 19th", "det": ["2026.09.17: holding course on the 10/5 proposal from Qcells.", "2026.09.25: pricing to come in 10/2 on their side, so probably not in on 10/5; '19th or 12th is more likely' (no month given), citing no more exclusivity and wanting more time."], "c": ["qdate"], "src": "Monarch RN 2026.09.17, 2026.09.25"}, {"id": "ce", "lane": "epc", "col": 3, "st": "now", "t": "Exhibits: Qcells to CE templates", "d": "Harvey, redline vs baseline", "det": ["Migrate site info from the Qcells versions to the CE versions, then redline against the Bridgeland versions.", "Use Harvey to get site spec info into clean updated templates, then redline against the baseline with Mortenson and Moss: 'next week activity' (written 2026.10.01)."], "src": "Monarch RN 2026.09.17, 2026.10.01, 2026.10.05"}, {"id": "mm", "lane": "epc", "col": 3, "st": "now", "t": "Mortenson + Moss early release", "d": "dataroom first, full dataroom if interested", "det": ["2026.09.29: docs minus exhibits, old addendums and bid notice loaded to Procore with a new bid module; pending contacts from MAM and MOSS.", "2026.10.01: Ben to send an email intro with Mortenson; Jordan sends the dataroom. If still interested after that, they get the full dataroom. 'hold on moss' is unclear.", "They said they are not concerned about schedule, just that price is tight."], "c": ["dr"], "src": "Monarch RN 2026.09.24, 2026.09.29, 2026.10.01, 2026.10.05"}, {"id": "bn", "lane": "epc", "col": 3, "st": "now", "t": "Bid narrative redo", "d": "for the Mortenson / Moss RFP", "det": ["Redo and scrub the bid narrative for the mort/moss RFP.", "Update addendum due dates and make sure the addendum files go into the main dataroom."], "src": "Monarch RN 2026.10.01, 2026.10.05"}, {"id": "mcc", "lane": "epc", "col": 3, "st": "open", "t": "Going out to mccarthy", "d": "scope not stated", "det": ["2026.09.17: holding course on the Qcells 10/5 proposal but also going out to mccarthy.", "The notes do not say what this commits to or whether it changes the bidder set."], "src": "Monarch RN 2026.09.17"}, {"id": "epca", "lane": "epc", "col": 5, "st": "future", "t": "Execute EPCA", "d": "needs GIA and export certainty", "det": ["2026.01.14: cannot sign EPC without GIA.", "Decision to sign EPCA depends on resolving export capability (open red flag as of 2026.04.01).", "RAS go/no-go at the August technical group gives a clean decision point before any irreversible EPC commitment (2026.05.28)."], "src": "Monarch Pillars, Contracting (LNTP decision); Red Flags 2026.04.01, 2026.05.28"}, {"id": "ras", "lane": "ic", "col": 2, "st": "open", "t": "RAS approval (SPS to SPP)", "d": "7/31 TWG slot; outcome not logged", "det": ["Missed the 6/24 TWG; secured a spot on the July 31 TWG agenda. Escalated top-down for a response.", "Approval is at SPS's discretion; SPP cannot force SPS.", "Path: TWG, then August technical groups, then October MOPC final approval.", "No RAS update is logged in Running Notes or Pillars after 2026.06.29."], "src": "Monarch Pillars, Interconnection 2026.05.28, 2026.06.29"}, {"id": "gia", "lane": "ic", "col": 4, "st": "open", "t": "GIA execution", "d": "status not logged since early 2026", "det": ["GIA execution target was December 12th (per 2025.11.13).", "2026.01.14: cannot sign EPC without GIA.", "Construction window is 36 months from GIA execution."], "src": "Monarch Pillars, Schedule anchors; Schedule 2026.01.14"}, {"id": "gate", "lane": "ic", "col": 5, "st": "hard", "t": "HARD GATE: export capability", "d": "RAS approved before EPCA", "det": ["SPP curtailment could mean 0 MW export until 2030 to 2032; RAS manages curtailment until the 765 kV upgrades.", "About $60MM estimated PPA penalty exposure to Meta if 2029 export is not achievable.", "Decision to sign EPCA depends on resolution."], "src": "Monarch Pillars, Red Flags 2026.04.01, 2026.05.28"}, {"id": "gsu", "lane": "com", "col": 1, "st": "done", "t": "GSU 2026 units, SOC 2026", "d": "confirmed with Kirsta 6/09", "det": ["Moving GSUs from 2025 units to 2026 units shifts start of construction and triggers extra FEOC, a main body change (loop in Victoria).", "SOC confirmed as 2026 with Kirsta (2026.06.09).", "GSU pricing about 2x higher for 2026 units (red flag 2026.04.01)."], "src": "Monarch Pillars, Schedule 2026.06.05 to 2026.06.09; Red Flags 2026.04.01"}, {"id": "tp", "lane": "com", "col": 1, "st": "done", "t": "Target price ~78 cents/W", "d": "email sent 6/24", "det": ["Estimating update comes to roughly 78 cents per W (2026.06.18).", "Target price email sent to VP and wider team (2026.06.24).", "Earlier: aggressive target price $0.68 (2025.07.22)."], "src": "Monarch Pillars, Pricing / Finance 2026.06.18, 2026.06.24; Target price"}, {"id": "tpchk", "lane": "com", "col": 4, "st": "open", "t": "78 cents 'very tight'", "d": "check the target price is 78 cents", "det": ["Answer from Mortenson / Moss: 78 cents is very tight, so they need the dataroom to confirm interest.", "Jordan: check target price, make sure it's 78 cents."], "src": "Monarch RN 2026.10.01; Pillars Pricing / Finance 2026.10.01"}, {"id": "ppa", "lane": "com", "col": 5, "st": "open", "t": "PPA date / COD extension", "d": "likely 6 months to 1 year", "det": ["Likely negotiating the PPA date to extend COD another 6 months to 1 year.", "Holding current dates in the RFP means a change-order risk later."], "src": "Monarch Pillars, Schedule 2026.06.30; Red Flags 2026.06.30"}, {"id": "con", "lane": "build", "col": 6, "st": "future", "t": "Construction", "d": "36 months from GIA execution", "det": ["Construction window: 36 months from GIA execution.", "Minimum 6 months from backfeed to COD."], "src": "Monarch Pillars, Schedule anchors"}, {"id": "cod", "lane": "build", "col": 6, "st": "ms", "t": "COD March 2029", "d": "planning; P6 June 2029", "det": ["COD target March 2029 (planning assumption); P6 showing June 2029.", "Likely PPA extension of 6 months to 1 year (2026.06.30)."], "c": ["cod"], "src": "Monarch Pillars, Schedule anchors; Schedule 2026.06.30"}], "edges": [{"f": "d10", "t": "rfp", "why": "updated 10% is the relaunch basis"}, {"f": "d10", "t": "tp", "why": "new-design estimate feeds the target price"}, {"f": "gpr", "t": "rfp", "why": "open GPR info memorialized in the bid narrative", "w": 1}, {"f": "gsu", "t": "tp", "why": "2026 GSU pricing in the estimate", "w": 1}, {"f": "tp", "t": "rfp", "why": "target price set before the relaunch"}, {"f": "rfp", "t": "qprop", "why": "Qcells prices the relaunch package"}, {"f": "q30", "t": "qprop", "why": "Qcells estimating works off the 30% package"}, {"f": "rfi", "t": "qprop", "why": "open RFIs feed Qcells pricing", "w": 1}, {"f": "ce", "t": "mm", "why": "updated CE templates redlined with Mortenson / Moss"}, {"f": "bn", "t": "mm", "why": "bid narrative for the mort/moss RFP"}, {"f": "rfp", "t": "mm", "why": "dataroom from the relaunch package"}, {"f": "tp", "t": "tpchk", "why": "78 cents target"}, {"f": "mm", "t": "tpchk", "why": "bidders say 78 cents is very tight"}, {"f": "qprop", "t": "tpchk", "why": "Qcells price against target"}, {"f": "mcc", "t": "tpchk", "why": "possible further price", "w": 1}, {"f": "tpchk", "t": "epca", "why": "price basis for EPCA"}, {"f": "ras", "t": "gate", "why": "RAS approval resolves export"}, {"f": "gate", "t": "epca", "why": "export certainty before signing", "h": 1}, {"f": "gia", "t": "epca", "why": "cannot sign EPC without GIA"}, {"f": "gia", "t": "con", "why": "36-month window starts at GIA execution"}, {"f": "ppa", "t": "cod", "why": "PPA date sets the COD target"}, {"f": "epca", "t": "con", "why": "EPCA releases construction"}, {"f": "con", "t": "cod", "why": "backfeed then at least 6 months to COD"}], "conf": {"qdate": {"t": "Qcells proposal date", "x": "2026.09.17 holds the 10/5 Qcells proposal. 2026.09.25 says pricing comes in 10/2 on their side, so 10/5 is unlikely and the 19th or 12th (no month) is more likely."}, "dr": {"t": "Early release status", "x": "2026.09.29 records the early-release docs as loaded to Procore. The 2026.10.05 need-to list still carries the dataroom early release line."}, "cod": {"t": "COD", "x": "Planning assumption March 2029, P6 June 2029, and a likely PPA extension of 6 months to 1 year (2026.06.30). Current RFP dates are held."}}, "stories": [{"name": "Where we are today", "ids": ["q30", "rfi", "qprop", "ce", "mm", "bn", "mcc"], "html": "<p>Monarch is collecting price. Qcells' exclusivity has ended; its proposal was held for 10/5 but is more likely the 12th or 19th. In parallel AES is opening the bid to Mortenson and Moss (early dataroom release), going out to mccarthy, redoing the bid narrative, and rebuilding exhibits on CE templates.<\/p>"}, {"name": "The export gate", "ids": ["ras", "gate", "gia", "epca", "ppa"], "html": "<p>EPCA waits on export certainty. RAS approval sits with SPS, then SPP (TWG, August technical groups, October MOPC). No RAS update is logged after 2026.06.29. GIA is also required before signing.<\/p>"}, {"name": "Bidders and price", "ids": ["tp", "rfp", "qprop", "mm", "mcc", "tpchk"], "html": "<p>Target price about 78 cents/W (6/18). Mortenson / Moss say 78 cents is very tight and want the dataroom before confirming interest. Check the target is 78 cents.<\/p>"}, {"name": "Open conflicts", "ids": ["qprop", "mm", "cod"], "conf": true, "html": "<p>Items carrying an unresolved conflict in the sources:<\/p>"}], "introTitle": "Monarch Solar today", "intro": "<p>Monarch is in a <b>bid and second-source stage<\/b>. The relaunch package (updated 10%, target price about 78 cents/W, 70-day bid period) is out. Qcells finished its 30% package and its pricing is slipping past 10/5 now that exclusivity has ended.<\/p><p>AES is opening the bid to <b>Mortenson and Moss<\/b> (dataroom first, full dataroom if interested) and going out to mccarthy. Bidders call 78 cents very tight.<\/p><p>EPCA stays behind the <b>export gate<\/b>: RAS approval through SPS and SPP, plus GIA.<\/p>", "sources": "Monarch Running Notes (through 2026.10.05) and Pillars (Notion). No new analysis."};
+const STAGES = D.stages, LANES = D.lanes, N = D.nodes, E = D.edges, CONF = D.conf || {}, STORIES = D.stories || [];
+const STATUS = {done:"Done", now:"In progress", future:"Future", open:"Open", hard:"Hard gate", soft:"Soft gate", ms:"Milestone"};
+const SCOL = {done:"var(--done)", now:"var(--now)", future:"var(--fut)", open:"var(--open)", hard:"var(--hard)", soft:"var(--soft)", ms:"var(--ms)"};
+
+// ---------- layout ----------
+const LANE_LBL_W = 150, COL_W = 250, NODE_W = 214, TOP = 78, VGAP = 14, LANE_PAD = 16;
+const byId = {}; N.forEach(n=>byId[n.id]=n);
+function wrap(txt, max){ const w=txt.split(" "); const lines=[""]; w.forEach(x=>{ if((lines[lines.length-1]+" "+x).trim().length>max) lines.push(x); else lines[lines.length-1]=(lines[lines.length-1]+" "+x).trim(); }); return lines.filter(Boolean); }
+N.forEach(n=>{ n.tl = wrap(n.t, 27); n.dl = wrap(n.d, 32); n.h = 22 + n.tl.length*15 + n.dl.length*14 + 6; });
+const laneY = {}; let y = TOP;
+LANES.forEach(l=>{
+  let maxH = 60;
+  STAGES.forEach((s,c)=>{ const items = N.filter(n=>n.lane===l.id && n.col===c); const h = items.reduce((a,n)=>a+n.h+VGAP,0)-VGAP; maxH = Math.max(maxH,h); });
+  laneY[l.id] = {y, h:maxH + LANE_PAD*2}; y += maxH + LANE_PAD*2;
+});
+const H = y + 20, W = LANE_LBL_W + STAGES.length*COL_W + 20;
+LANES.forEach(l=>{ STAGES.forEach((s,c)=>{ let yy = laneY[l.id].y + LANE_PAD; N.filter(n=>n.lane===l.id && n.col===c).forEach(n=>{ n.x = LANE_LBL_W + c*COL_W + (COL_W-NODE_W)/2; n.y = yy; yy += n.h + VGAP; }); }); });
+
+const svg = document.getElementById("map"), vp = document.getElementById("vp");
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs={}, parent=vp) => { const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; };
+const defs = el("defs",{},svg);
+[["a","#475569"],["ah","#60a5fa"],["au","#fbbf24"],["ar","#ef4444"]].forEach(([id,c])=>{
+  const m = el("marker",{id, viewBox:"0 0 10 10", refX:9, refY:5, markerWidth:5, markerHeight:5, orient:"auto-start-reverse"}, defs);
+  el("path",{d:"M0,0 L10,5 L0,10 z", fill:c}, m);
+});
+LANES.forEach((l,i)=>{
+  el("rect",{class:"lanebg"+(i%2?" alt":""), x:0, y:laneY[l.id].y, width:W, height:laneY[l.id].h});
+  const lines = wrap(l.label, 16);
+  lines.forEach((ln,j)=>{ const t = el("text",{class:"lanelbl", x:14, y:laneY[l.id].y + laneY[l.id].h/2 + 4 + (j-(lines.length-1)/2)*15}); t.textContent = ln; });
+});
+const stageEls = {};
+STAGES.forEach((s,i)=>{
+  const x0 = LANE_LBL_W + i*COL_W, cx = x0 + COL_W/2;
+  const g = el("g",{class:"stage"});
+  el("line",{x1:x0+COL_W, y1:TOP-6, x2:x0+COL_W, y2:H-10}, g);
+  el("rect",{x:x0+10, y:14, width:COL_W-20, height:46, rx:10}, g);
+  const t = el("text",{x:cx, y:33, "text-anchor":"middle"}, g); t.textContent = s.label;
+  const d = el("text",{class:"d", x:cx, y:50, "text-anchor":"middle"}, g); d.textContent = s.d;
+  g.addEventListener("click", ev=>{ ev.stopPropagation(); selectStage(i); });
+  stageEls[s.id] = g;
+});
+// today marker, placed at the start of the stage holding the current position
+const tx = LANE_LBL_W + D.today.col*COL_W + 8;
+const tg = el("g",{class:"today"});
+el("line",{x1:tx, y1:62, x2:tx, y2:H-10}, tg);
+el("rect",{x:tx-4, y:62, width:Math.max(150, D.today.label.length*7+12), height:20, rx:10}, tg);
+const tt = el("text",{x:tx+6, y:76}, tg); tt.textContent = D.today.label;
+
+const edgeLayer = el("g");
+E.forEach(e=>{
+  const a = byId[e.f], b = byId[e.t]; let d;
+  if(a.col === b.col){
+    const up = b.y < a.y;
+    const x1 = a.x + NODE_W/2 + 30, y1 = up ? a.y : a.y + a.h, y2 = up ? b.y + b.h : b.y;
+    d = `M${x1},${y1} L${x1},${y2}`;
+  } else {
+    const s0 = {x:a.x+NODE_W, y:a.y+a.h/2}, t0 = {x:b.x, y:b.y+b.h/2};
+    const mx = (s0.x+t0.x)/2;
+    d = `M${s0.x},${s0.y} C${mx},${s0.y} ${mx},${t0.y} ${t0.x-2},${t0.y}`;
+  }
+  e.el = el("path",{class:"edge"+(e.h?" hardE":"")+(e.w?" weak":""), d, "marker-end":e.h?"url(#ar)":"url(#a)"}, edgeLayer);
+});
+const nodeEls = {};
+N.forEach(n=>{
+  const g = el("g",{class:"node "+n.st, transform:`translate(${n.x},${n.y})`});
+  el("rect",{class:"box", width:NODE_W, height:n.h, rx: n.st==="ms" ? n.h/2 : (n.st==="hard"||n.st==="soft" ? 3 : 8)}, g);
+  if(n.st==="hard"||n.st==="soft"){ el("path",{d:`M0,${n.h/2} L10,0 M0,${n.h/2} L10,${n.h} M${NODE_W},${n.h/2} L${NODE_W-10},0 M${NODE_W},${n.h/2} L${NODE_W-10},${n.h}`, stroke:n.st==="hard"?"var(--hard)":"var(--soft)", "stroke-width":2, fill:"none"}, g); }
+  const px = n.st==="ms" ? 18 : 14;
+  const tag = el("text",{class:"tag", x:px, y:15}, g); tag.textContent = STATUS[n.st].toUpperCase();
+  n.tl.forEach((ln,i)=>{ const t = el("text",{class:"t", x:px, y:32 + i*15}, g); t.textContent = ln; });
+  n.dl.forEach((ln,i)=>{ const t = el("text",{class:"d", x:px, y:32 + n.tl.length*15 + i*14}, g); t.textContent = ln; });
+  if(n.c){ el("circle",{class:"cflag", cx:NODE_W-12, cy:12, r:8}, g); const ct = el("text",{class:"cflagt", x:NODE_W-12, y:15.5, "text-anchor":"middle"}, g); ct.textContent = "!"; }
+  g.addEventListener("click", ev=>{ ev.stopPropagation(); if(!moved) selectNode(n.id); });
+  nodeEls[n.id] = g;
+});
+
+// ---------- interaction ----------
+const panel = document.getElementById("panel");
+const bar = document.getElementById("stories");
+const nameOf = id => byId[id].t;
+const chip = st => `<span class="chip" style="color:${SCOL[st]};border-color:${SCOL[st]}">${STATUS[st]}</span>`;
+function clear(){
+  svg.classList.remove("dim");
+  vp.querySelectorAll(".on,.onup,.sel").forEach(x=>x.classList.remove("on","onup","sel"));
+  bar.querySelectorAll("button").forEach(b=>b.classList.remove("on"));
+}
+function walk(start, dir){
+  const seen = new Set([start]), q = [start], es = [];
+  while(q.length){ const cur = q.shift(); E.forEach(e=>{ const from = dir>0?e.f:e.t, to = dir>0?e.t:e.f; if(from===cur){ es.push(e); if(!seen.has(to)){ seen.add(to); q.push(to); } } }); }
+  return {nodes:seen, edges:es};
+}
+function confHtml(ids){ return (ids||[]).map(c=>`<div class="conf"><b>${CONF[c].t}:</b> ${CONF[c].x}</div>`).join(""); }
+function selectNode(id){
+  clear(); svg.classList.add("dim");
+  const n = byId[id]; nodeEls[id].classList.add("sel");
+  const dn = walk(id,1), upw = walk(id,-1);
+  dn.nodes.forEach(x=>nodeEls[x].classList.add("on")); dn.edges.forEach(e=>e.el.classList.add("on"));
+  upw.nodes.forEach(x=>nodeEls[x].classList.add("on")); upw.edges.forEach(e=>e.el.classList.add("onup"));
+  const ins = E.filter(e=>e.t===id), outs = E.filter(e=>e.f===id);
+  const li = (e, other) => `<li><b>${nameOf(other)}</b>: ${e.why}${e.h?' <i style="color:var(--hard)">(hard gate)</i>':''}${e.w?' <i style="color:var(--muted)">(soft link)</i>':''}</li>`;
+  panel.innerHTML = `<h2>${n.t}</h2><div class="meta">${chip(n.st)} ${STAGES[n.col].label} &middot; ${LANES.find(l=>l.id===n.lane).label}</div>
+    <div><b>${n.d}</b></div>
+    <div class="k">Details</div><ul>${n.det.map(x=>`<li>${x}</li>`).join("")}</ul>
+    ${n.c?`<div class="k">Open conflict</div>${confHtml(n.c)}`:""}
+    <div class="k" style="color:var(--up)">Needs (upstream)</div>${ins.length?`<ul>${ins.map(e=>li(e,e.f)).join("")}</ul>`:`<p style="color:var(--muted)">Nothing upstream on this map.</p>`}
+    <div class="k" style="color:var(--hi)">Drives (downstream)</div>${outs.length?`<ul>${outs.map(e=>li(e,e.t)).join("")}</ul>`:`<p style="color:var(--muted)">End of chain.</p>`}
+    <div class="src">Source: ${n.src}</div>`;
+  location.hash = id;
+}
+function selectStage(i){
+  clear(); svg.classList.add("dim");
+  const s = STAGES[i]; stageEls[s.id].classList.add("sel");
+  const items = N.filter(n=>n.col===i); items.forEach(n=>nodeEls[n.id].classList.add("on"));
+  E.forEach(e=>{ if(byId[e.f].col===i || byId[e.t].col===i) e.el.classList.add("on"); });
+  panel.innerHTML = `<h2>${s.label}</h2><div class="meta">${s.d}</div><p>${s.why}</p><div class="k">In this stage</div><ul>${items.map(n=>`<li>${chip(n.st)}<a href="#${n.id}" style="color:var(--ink)" onclick="selectNode('${n.id}');return false;">${n.t}</a>: ${n.d}</li>`).join("")}</ul>`;
+}
+function selectStory(s, btn){
+  clear(); svg.classList.add("dim"); btn.classList.add("on");
+  s.ids.forEach(id=>nodeEls[id].classList.add("on"));
+  E.forEach(e=>{ if(s.ids.includes(e.f) && s.ids.includes(e.t)) e.el.classList.add("on"); });
+  const confs = s.conf ? Object.keys(CONF) : [];
+  panel.innerHTML = `<h2>${s.name}</h2>${s.html}${confHtml(confs)}<div class="k">Items</div><ul>${s.ids.map(id=>`<li>${chip(byId[id].st)}<a href="#${id}" style="color:var(--ink)" onclick="selectNode('${id}');return false;">${nameOf(id)}</a>: ${byId[id].d}</li>`).join("")}</ul><p style="color:var(--muted);font-size:12.5px">Click any item to trace it.</p>`;
+}
+STORIES.forEach(s=>{ const b=document.createElement("button"); b.textContent=s.name; b.onclick=()=>selectStory(s,b); bar.appendChild(b); });
+function intro(){
+  panel.innerHTML = `<h2>${D.introTitle}</h2>${D.intro}
+  ${Object.keys(CONF).length?`<div class="k">Open conflicts</div>${confHtml(Object.keys(CONF))}`:""}
+  <div class="k">How to use</div><ul><li>Click a box to trace what it needs (amber) and what it drives (blue).</li><li>Click a stage header for everything in that window.</li><li>Use Stories for guided views. Tap empty space to reset.</li></ul>
+  <div class="src">Sources: ${D.sources}</div>`;
+}
+
+// ---------- pan / zoom (mouse, wheel, touch pinch) ----------
+let sc = 1, ox = 0, oy = 0, moved = false;
+const wrapEl = document.getElementById("wrap");
+function apply(){ vp.setAttribute("transform", `translate(${ox},${oy}) scale(${sc})`); }
+function fit(){ const r = wrapEl.getBoundingClientRect(); sc = Math.min(r.width/W, r.height/H); ox = (r.width - W*sc)/2; oy = Math.max(0,(r.height - H*sc)/2); apply(); }
+function zoomAt(f, cx, cy){ const ns = Math.max(0.15, Math.min(4, sc*f)); ox = cx - (cx-ox)*(ns/sc); oy = cy - (cy-oy)*(ns/sc); sc = ns; apply(); }
+function goToday(){ const r = wrapEl.getBoundingClientRect(); sc = Math.max(0.6, Math.min(1, r.height/H*1.6)); ox = r.width*0.35 - (tx)*sc; oy = 10; apply(); }
+wrapEl.addEventListener("wheel", ev=>{ ev.preventDefault(); const r = wrapEl.getBoundingClientRect(); const f = ev.ctrlKey ? Math.exp(-ev.deltaY*0.01) : (ev.deltaY<0?1.12:1/1.12); if(ev.ctrlKey || !ev.shiftKey && Math.abs(ev.deltaY)>Math.abs(ev.deltaX)) zoomAt(f, ev.clientX-r.left, ev.clientY-r.top); else { ox -= ev.deltaX; apply(); } }, {passive:false});
+const ptrs = new Map(); let pinch0 = null, start = null;
+wrapEl.addEventListener("pointerdown", ev=>{ ptrs.set(ev.pointerId, {x:ev.clientX, y:ev.clientY}); moved = false; start = {x:ev.clientX, y:ev.clientY, ox, oy};
+  if(ptrs.size===2){ const [p1,p2] = [...ptrs.values()]; pinch0 = {d:Math.hypot(p1.x-p2.x,p1.y-p2.y), sc, ox, oy, cx:(p1.x+p2.x)/2, cy:(p1.y+p2.y)/2}; } });
+wrapEl.addEventListener("pointermove", ev=>{ if(!ptrs.has(ev.pointerId)) return; ptrs.set(ev.pointerId, {x:ev.clientX, y:ev.clientY});
+  const r = wrapEl.getBoundingClientRect();
+  if(ptrs.size===2 && pinch0){ const [p1,p2] = [...ptrs.values()]; const d = Math.hypot(p1.x-p2.x,p1.y-p2.y); const ns = Math.max(0.15, Math.min(4, pinch0.sc*d/pinch0.d)); const cx = pinch0.cx - r.left, cy = pinch0.cy - r.top; const mx=(p1.x+p2.x)/2 - r.left, my=(p1.y+p2.y)/2 - r.top; ox = mx - (cx-pinch0.ox)*(ns/pinch0.sc); oy = my - (cy-pinch0.oy)*(ns/pinch0.sc); sc = ns; moved = true; apply(); return; }
+  if(ptrs.size===1 && start){ const dx = ev.clientX-start.x, dy = ev.clientY-start.y; if(Math.abs(dx)+Math.abs(dy) > 5){ moved = true; wrapEl.classList.add("drag"); } if(moved){ ox = start.ox + dx; oy = start.oy + dy; apply(); } } });
+function up(ev){ ptrs.delete(ev.pointerId); if(ptrs.size<2) pinch0 = null; if(ptrs.size===0){ wrapEl.classList.remove("drag"); start = null; } else { const p=[...ptrs.values()][0]; start = {x:p.x, y:p.y, ox, oy}; } }
+["pointerup","pointercancel","pointerleave"].forEach(t=>wrapEl.addEventListener(t, up));
+svg.addEventListener("click", ()=>{ if(moved) return; clear(); intro(); location.hash=""; });
+document.getElementById("zi").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(1.25, r.width/2, r.height/2); };
+document.getElementById("zo").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(0.8, r.width/2, r.height/2); };
+document.getElementById("fit").onclick = fit;
+document.getElementById("here").onclick = ()=>{ goToday(); if(STORIES.length) selectStory(STORIES[0], bar.querySelectorAll("button")[0]); };
+let lastW = window.innerWidth; window.addEventListener("resize", ()=>{ if(Math.abs(window.innerWidth-lastW)>80){ lastW = window.innerWidth; if(window.innerWidth<900) goToday(); else fit(); } });
+intro(); if(window.innerWidth<900) goToday(); else fit();
+const h0 = location.hash.slice(1); if(byId[h0]) selectNode(h0);
+</script>
+</body>
+</html>
