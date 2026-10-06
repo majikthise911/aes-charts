@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
+<title>Grand Mayes Solar: process map and gates</title>
+<style>
+:root{
+  --bg:#0b0f14; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --lane:#0f1620; --lane2:#0b0f14;
+  --card:#111827; --panel:#0f1620; --edge:#475569; --hi:#60a5fa; --up:#fbbf24;
+  --done:#22c55e; --donebg:#0c2a18; --now:#3b82f6; --nowbg:#0d2244; --fut:#64748b;
+  --open:#f97316; --openbg:#341a08; --hard:#ef4444; --hardbg:#3a0d0d; --soft:#f59e0b; --softbg:#352506;
+  --ms:#e2e8f0; --today:#38bdf8;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{display:flex;flex-direction:column;margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;overflow:hidden}
+header{padding:10px 16px 2px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12.5px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px}
+.bar b{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+button{font:inherit;font-size:13px;border:1px solid #334155;background:var(--card);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--hi)}
+button.on{background:var(--hi);border-color:var(--hi);color:#0b0f14}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:0 16px 7px;color:var(--muted);font-size:12px;align-items:center}
+.sw{display:inline-block;width:14px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:2px solid}
+.zoom{margin-left:auto;display:flex;gap:4px;align-items:center}
+.zoom button{padding:3px 10px}
+main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
+#wrap{flex:1;overflow:hidden;min-width:0;position:relative;cursor:grab;touch-action:none;background:var(--bg)}
+#wrap.drag{cursor:grabbing}
+svg{display:block;width:100%;height:100%}
+#panel{width:390px;flex:none;overflow:auto;padding:14px 16px 20px;background:var(--panel);border-left:1px solid var(--line)}
+@media (max-width:900px){main{flex-direction:column}#panel{width:auto;max-height:42vh;border-left:0;border-top:1px solid var(--line)} h1{font-size:15px} .sub{display:none} .bar,.legend{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none} .legend{font-size:11px;gap:9px} .legend .zoom{position:sticky;right:0;background:var(--bg);padding-left:6px} button{padding:4px 10px;font-size:12.5px} header{padding:8px 12px 0}}
+#panel h2{font-size:16px;margin:0 0 4px}
+#panel .meta{color:var(--muted);font-size:12.5px;margin-bottom:8px}
+#panel ul{margin:4px 0 10px;padding-left:18px}
+#panel li{margin:4px 0}
+#panel .k{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:12px}
+#panel .src{color:var(--muted);font-style:italic;font-size:12.5px;margin-top:12px}
+#panel .conf{border-left:3px solid var(--open);background:#1a1208;padding:6px 10px;border-radius:4px;margin:6px 0;font-size:13px}
+#panel p{margin:0 0 8px}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;border:1.5px solid;margin-right:6px;text-transform:uppercase;letter-spacing:.04em}
+.lanebg{fill:var(--lane)} .lanebg.alt{fill:var(--lane2)}
+.lanelbl{fill:var(--muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.stage line{stroke:#334155;stroke-width:1.2;stroke-dasharray:3 5}
+.stage rect{fill:#1e293b;stroke:#334155}
+.stage text{fill:var(--ink);font-weight:700;font-size:12px}
+.stage .d{fill:var(--muted);font-weight:400;font-size:11px}
+.stage{cursor:pointer}
+.stage.sel rect{fill:#1e3a5f;stroke:var(--hi)}
+.node{cursor:pointer}
+.node text{fill:var(--ink);font-size:12.5px}
+.node text.t{font-weight:700}
+.node text.d{fill:var(--muted);font-size:11.5px}
+.node text.tag{font-size:9.5px;font-weight:800;letter-spacing:.06em}
+.node .box{stroke-width:1.6}
+.node.done .box{fill:var(--donebg);stroke:var(--done)} .node.done .tag{fill:var(--done)}
+.node.now .box{fill:var(--nowbg);stroke:var(--now);stroke-width:3} .node.now .tag{fill:var(--now)}
+.node.future .box{fill:transparent;stroke:var(--fut);stroke-dasharray:6 4} .node.future .tag{fill:var(--fut)}
+.node.open .box{fill:var(--openbg);stroke:var(--open);stroke-width:2} .node.open .tag{fill:var(--open)}
+.node.hard .box{fill:var(--hardbg);stroke:var(--hard);stroke-width:3} .node.hard .tag{fill:var(--hard)}
+.node.soft .box{fill:var(--softbg);stroke:var(--soft);stroke-width:2} .node.soft .tag{fill:var(--soft)}
+.node.ms .box{fill:var(--ms);stroke:var(--ms)} .node.ms text{fill:#0b0f14} .node.ms .tag{fill:#334155}
+.node:hover .box{filter:brightness(1.35)}
+.node.sel .box{stroke:var(--hi)!important;stroke-width:3.5!important;stroke-dasharray:none!important}
+.cflag{fill:var(--open)} .cflagt{fill:#0b0f14!important;font-size:10px!important;font-weight:900}
+.edge{fill:none;stroke:var(--edge);stroke-width:1.5;opacity:.7}
+.edge.hardE{stroke:var(--hard);stroke-width:3;opacity:.85}
+.edge.weak{stroke-dasharray:5 4}
+.today line{stroke:var(--today);stroke-width:2;stroke-dasharray:6 4}
+.today rect{fill:var(--today)} .today text{fill:#0b0f14;font-weight:800;font-size:11.5px}
+.dim .node,.dim .stage{opacity:.2}
+.dim .edge{opacity:.07}
+.dim .node.on,.dim .node.sel{opacity:1}
+.dim .edge.on{opacity:1;stroke:var(--hi);stroke-width:2.6}
+.dim .edge.onup{opacity:1;stroke:var(--up);stroke-width:2.6}
+.dim .edge.hardE.on,.dim .edge.hardE.onup{stroke-width:3.5}
+</style>
+</head>
+<body>
+<header>
+  <h1>Grand Mayes Solar: where we are, what depends on what, key dates</h1>
+  <div class="sub">Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage for dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. An orange &quot;!&quot; marks an open conflict.</div>
+</header>
+<div class="bar" id="stories"><b>Stories</b></div>
+<div class="legend">
+  <span><span class="sw" style="background:var(--donebg);border-color:var(--done)"></span>Done</span>
+  <span><span class="sw" style="background:var(--nowbg);border-color:var(--now)"></span>In progress</span>
+  <span><span class="sw" style="background:transparent;border-color:var(--fut);border-style:dashed"></span>Future</span>
+  <span><span class="sw" style="background:var(--openbg);border-color:var(--open)"></span>Open / unresolved</span>
+  <span><span class="sw" style="background:var(--hardbg);border-color:var(--hard)"></span>Hard gate</span>
+  <span><span class="sw" style="background:var(--softbg);border-color:var(--soft)"></span>Soft gate</span>
+  <span><span class="sw" style="background:var(--ms);border-color:var(--ms)"></span>Fixed milestone</span>
+  <span><span class="sw" style="background:var(--hi);border-color:var(--hi)"></span>drives (downstream)</span>
+  <span><span class="sw" style="background:var(--up);border-color:var(--up)"></span>needs (upstream)</span>
+  <span class="zoom"><button id="zo">-</button><button id="zi">+</button><button id="fit">Fit</button><button id="here">Today</button></span>
+</div>
+<main><div id="wrap"><svg id="map"><g id="vp"></g></svg></div><div id="panel"></div></main>
+
+<script>
+const D = {"title": "Grand Mayes Solar: process map and gates", "h1": "Grand Mayes Solar: where we are, what depends on what, key dates", "sub": "Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage for dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. An orange \"!\" marks an open conflict.", "today": {"col": 4, "label": "YOU ARE HERE: Tue 10/6"}, "stages": [{"id": "s1", "label": "1. Qcells ECI bid", "d": "Nov 2025 to Apr 2026", "why": "RFP launched to Qcells Jan 26, 2026. Qcells ROM 11/14/25, binding 4/3/26, AES counter-offer 4/20, Qcells held price."}, {"id": "s2", "label": "2. Redesign + re-bid", "d": "May to Jun 2026", "why": "VE inverter swap and expansion-area redesign. RFP officially issued to PRE the evening of 6/02; Addendum 1 (G-2)."}, {"id": "s3", "label": "3. Bids + leveling", "d": "Jun to Jul 2026", "why": "Qcells Ver 3.0 compliance and levelization, ACE log, PRE site visit coordination, final pricing and rock / predrill estimates."}, {"id": "s4", "label": "4. Award + handover", "d": "Sep 2026", "why": "Awarded to PRE (2026.09.03). Mostly handed over to execution (Nat Clark)."}, {"id": "s5", "label": "5. Bid summary close-out", "d": "Sep to Oct 2026", "why": "Bid summary report complete 2026.10.01, PowerPoint sent to Matt. Appendices to Box still to do."}, {"id": "s6", "label": "6. Long-lead + NTP", "d": "Oct 2026 to 2027", "why": "Long-lead materials needed by Oct 2026 (2026.01.22 note). NTP 1/28/2027 (cheat sheet) vs 09-01-2027 (PTrack). Mob April '27."}, {"id": "s7", "label": "7. Energize + COD", "d": "12/01/2028, 3/31/2029", "why": "GIA: energization 12/01/2028, COD 03/31/2029."}], "lanes": [{"id": "epc", "label": "EPC bid + contract"}, {"id": "price", "label": "Pricing"}, {"id": "eng", "label": "Design + site"}, {"id": "sched", "label": "Schedule + build"}], "nodes": [{"id": "rfp1", "lane": "epc", "col": 0, "st": "done", "t": "RFP launch to Qcells", "d": "Jan 26, 2026 (exclusive ECI)", "det": ["RFP launch Jan 26, 2026, after slipping from early November 2025.", "Qcells is the exclusive ECI EPC on the project basics."], "c": ["epc"], "src": "GM Pillars, Schedule (RFP release history); Project basics"}, {"id": "qrom", "lane": "price", "col": 0, "st": "done", "t": "Qcells ROM", "d": "$247,773,755 (11/14/25)", "det": ["Qcells ROM $247,773,755 ($0.8011/Wdc), 11/14/25.", "AES target (excl modules) $252,116,280 ($0.8151/Wdc)."], "src": "GM Pillars, Pricing / Finance (canonical headline numbers)"}, {"id": "qbind", "lane": "price", "col": 0, "st": "done", "t": "Qcells binding price", "d": "$275,979,335 (4/3/26), +9.5% vs target", "det": ["Qcells binding $275,979,335 ($0.8923/Wdc), 4/3/26.", "Delta over AES target +$23,863,055 (+$0.0772/Wdc, +9.5%).", "Net ROM to binding about +$25M; biggest mover pre-drill $3.9M to $15.7M."], "src": "GM Pillars, Pricing / Finance"}, {"id": "counter", "lane": "price", "col": 0, "st": "done", "t": "Counter-offer, Qcells held", "d": "$264,722,094 sent 4/20", "det": ["Counter-offer $264,722,094 ($0.8559/W) sent 2026.04.20; excludes Modules, GSU, HV Breakers.", "Qcells said it is holding its price; excluded scope still excluded (2026.04.28)."], "src": "GM Pillars, Pricing / Finance; Red Flags 2026.04.28"}, {"id": "redesign", "lane": "eng", "col": 1, "st": "done", "t": "VE + expansion redesign", "d": "PE 4200 to PE 5075 inverters", "det": ["VE: PE 4200 to PE 5075 inverter swap (2026.06.05).", "Expansion area requires design rework (2026.06.05)."], "src": "GM Pillars, Equipment 2026.06.05; Engineering 2026.06.05"}, {"id": "rfppre", "lane": "epc", "col": 1, "st": "done", "t": "RFP issued to PRE", "d": "evening of 6/02; G-2 addendum", "det": ["RFP officially issued to PRE the evening of 06.02; bid due 8 weeks out (maybe sooner).", "R-1.1 changed from 97.5 to 98.", "Addendum 1 (G-2) mid to late June."], "src": "GM Pillars, Contracting 2026.06.01 to 2026.06.23"}, {"id": "qv3", "lane": "epc", "col": 2, "st": "done", "t": "Qcells Ver 3.0 + levelization", "d": "compliance vs RFP 8.1, ACE log", "det": ["Qcells Ver 3.0 compliance check vs RFP section 8.1 (2026.06.11).", "Qcells levelization (2026.06.18); ACE log responses via Procore (2026.06.26).", "Ben: PRE already gives a price check via their RFP; no more bidders."], "src": "GM RN 2026.06.11, 2026.06.18, 2026.06.26; Pillars Risk Register 2026.06.18"}, {"id": "sv", "lane": "eng", "col": 2, "st": "open", "t": "PRE site visit", "d": "targeted 7/20 to 7/22", "det": ["Primoris availability 7/15 to 7/22; landowner needs 2 weeks notice, so AES targeted 7/20 to 7/22.", "Whether the visit was held is not logged."], "src": "GM RN 2026.07.07; Pillars Schedule 2026.07.07"}, {"id": "rock", "lane": "price", "col": 2, "st": "open", "t": "Rock saw / blasting + predrill", "d": "50% vs 75% predrill; outcome not logged", "det": ["Predrill: Tughan follows 50%, Jourdan (civil SME) leans 75% (2026.06.29).", "Two rock-cost timelines to reconcile: COB-Thursday blasting price vs Kiefer's high-risk-area analysis (2026.07.07)."], "src": "GM Pillars, Risk Register 2026.06.29; Pricing 2026.07.07"}, {"id": "preprice", "lane": "price", "col": 2, "st": "done", "t": "Final EPC pricing", "d": "committed COB Thursday (7/07 thread)", "det": ["Estimating nearing end of GM pricing review; final answer by COB Thursday.", "Schedule revised to show EPC Execution by 8/26, delivered with pricing. Sender not named in the thread."], "src": "GM RN 2026.07.07"}, {"id": "award", "lane": "epc", "col": 3, "st": "done", "t": "Awarded to PRE", "d": "2026.09.03", "det": ["Awarded to PRE."], "src": "GM RN 2026.09.03; Pillars Contracting 2026.09.03"}, {"id": "hand", "lane": "epc", "col": 3, "st": "done", "t": "Handover to execution", "d": "Nat Clark", "det": ["Mostly handed over to execution: Nat Clark.", "Not a lot left for Jordan other than the bid summary report."], "src": "GM RN 2026.09.03"}, {"id": "epca", "lane": "epc", "col": 3, "st": "open", "t": "EPC execution", "d": "schedule showed by 8/26; not logged", "det": ["The 7/07 thread said the schedule would show EPC Execution by August 26.", "EPCA execution is not logged in Running Notes or Pillars."], "src": "GM RN 2026.07.07, 2026.09.03"}, {"id": "bsr", "lane": "epc", "col": 4, "st": "done", "t": "Bid summary report", "d": "complete 10/01, PowerPoint to Matt", "det": ["PowerPoint on the Monarch template, sent to Matt.", "Word doc drafted but not finalized; optional."], "src": "GM RN 2026.09.29, 2026.10.01"}, {"id": "appx", "lane": "epc", "col": 4, "st": "now", "t": "Appendices to Box", "d": "attach links to app page", "det": ["Put GM appendices for the bid summary in Box and attach links to the 'app page' (not identified)."], "src": "GM RN 2026.10.01"}, {"id": "ll", "lane": "sched", "col": 5, "st": "future", "t": "Long-lead materials", "d": "needed by Oct 2026", "det": ["2026.01.22 note: Oct 2026 long-lead materials need to be ordered, with enough design done, to hold mobilization. 6 months of engineering."], "src": "GM Pillars, Schedule (EPCA timeline progression)"}, {"id": "ntp", "lane": "sched", "col": 5, "st": "open", "t": "NTP", "d": "1/28/2027 vs 09-01-2027", "det": ["Cheat sheet (2026.04.07): NTP 1/28/2027.", "PTrack: NTP 09-01-2027. Neither source annotates the change."], "c": ["ntp"], "src": "GM Pillars, Schedule anchors"}, {"id": "mob", "lane": "sched", "col": 5, "st": "future", "t": "Mobilization", "d": "April '27", "det": ["Mob: april '27 (project basics)."], "src": "GM Pillars, Project basics"}, {"id": "energ", "lane": "sched", "col": 6, "st": "ms", "t": "Energization 12/01/2028", "d": "GIA; SC 12/15/2028", "det": ["GIA: energization and initial sync 12/01/2028; trial operation 12/02/2028.", "Contract SC 12/15/2028 (cheat sheet). PIS grind for Dec 2028 (2026.06.30)."], "src": "GM Pillars, Schedule anchors; Schedule 2026.06.30"}, {"id": "cod", "lane": "sched", "col": 6, "st": "ms", "t": "COD 3/31/2029", "d": "GIA; PTrack 03-30-2029", "det": ["GIA COD 03/31/2029; PTrack 03-30-2029.", "Final completion 4/24/2029 (cheat sheet)."], "src": "GM Pillars, Schedule anchors"}], "edges": [{"f": "qrom", "t": "qbind", "why": "ROM to binding, about +$25M"}, {"f": "rfp1", "t": "qbind", "why": "Qcells prices the January RFP"}, {"f": "qbind", "t": "counter", "why": "AES counters the binding price"}, {"f": "counter", "t": "rfppre", "why": "Qcells held price; re-bid to PRE", "w": 1}, {"f": "redesign", "t": "rfppre", "why": "updated design in the RFP"}, {"f": "rfppre", "t": "qv3", "why": "Qcells Ver 3.0 checked against the RFP"}, {"f": "rfppre", "t": "preprice", "why": "PRE prices the RFP"}, {"f": "sv", "t": "preprice", "why": "site visit informs pricing", "w": 1}, {"f": "rock", "t": "preprice", "why": "rock and predrill cost basis", "w": 1}, {"f": "preprice", "t": "award", "why": "price basis for award"}, {"f": "qv3", "t": "award", "why": "price check against Qcells"}, {"f": "award", "t": "hand", "why": "execution takes over"}, {"f": "award", "t": "epca", "why": "award to contract"}, {"f": "award", "t": "bsr", "why": "report on the bid"}, {"f": "bsr", "t": "appx", "why": "appendices finish the report"}, {"f": "epca", "t": "ll", "why": "contract releases long-lead orders"}, {"f": "ll", "t": "mob", "why": "materials hold mobilization"}, {"f": "ntp", "t": "mob", "why": "NTP ahead of mob"}, {"f": "mob", "t": "energ", "why": "construction to energization"}, {"f": "energ", "t": "cod", "why": "testing to COD"}], "conf": {"ntp": {"t": "NTP date", "x": "Cheat sheet 2026.04.07 says NTP 1/28/2027; PTrack says 09-01-2027. Neither source annotates the change."}, "epc": {"t": "EPC on project basics", "x": "Project basics still lists 'EPC (exclusive): Qcells USA Corp.' while the project was awarded to PRE on 2026.09.03."}}, "stories": [{"name": "Where we are today", "ids": ["award", "hand", "epca", "bsr", "appx"], "html": "<p>Grand Mayes was awarded to PRE on 2026.09.03 and is mostly with execution (Nat Clark). Jordan's bid summary report is complete (10/01); appendices to Box remain. EPC execution is not logged.<\/p>"}, {"name": "How we got to PRE", "ids": ["rfp1", "qrom", "qbind", "counter", "redesign", "rfppre", "qv3", "preprice", "award"], "html": "<p>Qcells' binding price came in 9.5% over target; AES countered at $264,722,094 and Qcells held. After a redesign, the RFP went to PRE on 6/02, with Qcells leveled alongside. Award to PRE 9/03.<\/p>"}, {"name": "Road to COD", "ids": ["epca", "ll", "ntp", "mob", "energ", "cod"], "html": "<p>Long-lead orders by Oct 2026, NTP (date in conflict), mob April '27, energization 12/01/2028, COD 3/31/2029.<\/p>"}, {"name": "Open conflicts", "ids": ["ntp", "rfp1"], "conf": true, "html": "<p>Items carrying an unresolved conflict in the sources:<\/p>"}], "introTitle": "Grand Mayes today", "intro": "<p>Grand Mayes is <b>awarded to PRE<\/b> (2026.09.03) and mostly handed over to execution (Nat Clark). Jordan's remaining work is close-out: the bid summary report is complete (PowerPoint to Matt, 10/01) and the appendices still go to Box.<\/p><p>Not logged yet: EPC execution (the July schedule showed 8/26) and whether the PRE site visit was held. Next fixed dates are GIA energization 12/01/2028 and COD 3/31/2029.<\/p>", "sources": "Grand Mayes Running Notes (through 2026.10.01) and Pillars (Notion). No new analysis."};
+const STAGES = D.stages, LANES = D.lanes, N = D.nodes, E = D.edges, CONF = D.conf || {}, STORIES = D.stories || [];
+const STATUS = {done:"Done", now:"In progress", future:"Future", open:"Open", hard:"Hard gate", soft:"Soft gate", ms:"Milestone"};
+const SCOL = {done:"var(--done)", now:"var(--now)", future:"var(--fut)", open:"var(--open)", hard:"var(--hard)", soft:"var(--soft)", ms:"var(--ms)"};
+
+// ---------- layout ----------
+const LANE_LBL_W = 150, COL_W = 250, NODE_W = 214, TOP = 78, VGAP = 14, LANE_PAD = 16;
+const byId = {}; N.forEach(n=>byId[n.id]=n);
+function wrap(txt, max){ const w=txt.split(" "); const lines=[""]; w.forEach(x=>{ if((lines[lines.length-1]+" "+x).trim().length>max) lines.push(x); else lines[lines.length-1]=(lines[lines.length-1]+" "+x).trim(); }); return lines.filter(Boolean); }
+N.forEach(n=>{ n.tl = wrap(n.t, 27); n.dl = wrap(n.d, 32); n.h = 22 + n.tl.length*15 + n.dl.length*14 + 6; });
+const laneY = {}; let y = TOP;
+LANES.forEach(l=>{
+  let maxH = 60;
+  STAGES.forEach((s,c)=>{ const items = N.filter(n=>n.lane===l.id && n.col===c); const h = items.reduce((a,n)=>a+n.h+VGAP,0)-VGAP; maxH = Math.max(maxH,h); });
+  laneY[l.id] = {y, h:maxH + LANE_PAD*2}; y += maxH + LANE_PAD*2;
+});
+const H = y + 20, W = LANE_LBL_W + STAGES.length*COL_W + 20;
+LANES.forEach(l=>{ STAGES.forEach((s,c)=>{ let yy = laneY[l.id].y + LANE_PAD; N.filter(n=>n.lane===l.id && n.col===c).forEach(n=>{ n.x = LANE_LBL_W + c*COL_W + (COL_W-NODE_W)/2; n.y = yy; yy += n.h + VGAP; }); }); });
+
+const svg = document.getElementById("map"), vp = document.getElementById("vp");
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs={}, parent=vp) => { const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; };
+const defs = el("defs",{},svg);
+[["a","#475569"],["ah","#60a5fa"],["au","#fbbf24"],["ar","#ef4444"]].forEach(([id,c])=>{
+  const m = el("marker",{id, viewBox:"0 0 10 10", refX:9, refY:5, markerWidth:5, markerHeight:5, orient:"auto-start-reverse"}, defs);
+  el("path",{d:"M0,0 L10,5 L0,10 z", fill:c}, m);
+});
+LANES.forEach((l,i)=>{
+  el("rect",{class:"lanebg"+(i%2?" alt":""), x:0, y:laneY[l.id].y, width:W, height:laneY[l.id].h});
+  const lines = wrap(l.label, 16);
+  lines.forEach((ln,j)=>{ const t = el("text",{class:"lanelbl", x:14, y:laneY[l.id].y + laneY[l.id].h/2 + 4 + (j-(lines.length-1)/2)*15}); t.textContent = ln; });
+});
+const stageEls = {};
+STAGES.forEach((s,i)=>{
+  const x0 = LANE_LBL_W + i*COL_W, cx = x0 + COL_W/2;
+  const g = el("g",{class:"stage"});
+  el("line",{x1:x0+COL_W, y1:TOP-6, x2:x0+COL_W, y2:H-10}, g);
+  el("rect",{x:x0+10, y:14, width:COL_W-20, height:46, rx:10}, g);
+  const t = el("text",{x:cx, y:33, "text-anchor":"middle"}, g); t.textContent = s.label;
+  const d = el("text",{class:"d", x:cx, y:50, "text-anchor":"middle"}, g); d.textContent = s.d;
+  g.addEventListener("click", ev=>{ ev.stopPropagation(); selectStage(i); });
+  stageEls[s.id] = g;
+});
+// today marker, placed at the start of the stage holding the current position
+const tx = LANE_LBL_W + D.today.col*COL_W + 8;
+const tg = el("g",{class:"today"});
+el("line",{x1:tx, y1:62, x2:tx, y2:H-10}, tg);
+el("rect",{x:tx-4, y:62, width:Math.max(150, D.today.label.length*7+12), height:20, rx:10}, tg);
+const tt = el("text",{x:tx+6, y:76}, tg); tt.textContent = D.today.label;
+
+const edgeLayer = el("g");
+E.forEach(e=>{
+  const a = byId[e.f], b = byId[e.t]; let d;
+  if(a.col === b.col){
+    const up = b.y < a.y;
+    const x1 = a.x + NODE_W/2 + 30, y1 = up ? a.y : a.y + a.h, y2 = up ? b.y + b.h : b.y;
+    d = `M${x1},${y1} L${x1},${y2}`;
+  } else {
+    const s0 = {x:a.x+NODE_W, y:a.y+a.h/2}, t0 = {x:b.x, y:b.y+b.h/2};
+    const mx = (s0.x+t0.x)/2;
+    d = `M${s0.x},${s0.y} C${mx},${s0.y} ${mx},${t0.y} ${t0.x-2},${t0.y}`;
+  }
+  e.el = el("path",{class:"edge"+(e.h?" hardE":"")+(e.w?" weak":""), d, "marker-end":e.h?"url(#ar)":"url(#a)"}, edgeLayer);
+});
+const nodeEls = {};
+N.forEach(n=>{
+  const g = el("g",{class:"node "+n.st, transform:`translate(${n.x},${n.y})`});
+  el("rect",{class:"box", width:NODE_W, height:n.h, rx: n.st==="ms" ? n.h/2 : (n.st==="hard"||n.st==="soft" ? 3 : 8)}, g);
+  if(n.st==="hard"||n.st==="soft"){ el("path",{d:`M0,${n.h/2} L10,0 M0,${n.h/2} L10,${n.h} M${NODE_W},${n.h/2} L${NODE_W-10},0 M${NODE_W},${n.h/2} L${NODE_W-10},${n.h}`, stroke:n.st==="hard"?"var(--hard)":"var(--soft)", "stroke-width":2, fill:"none"}, g); }
+  const px = n.st==="ms" ? 18 : 14;
+  const tag = el("text",{class:"tag", x:px, y:15}, g); tag.textContent = STATUS[n.st].toUpperCase();
+  n.tl.forEach((ln,i)=>{ const t = el("text",{class:"t", x:px, y:32 + i*15}, g); t.textContent = ln; });
+  n.dl.forEach((ln,i)=>{ const t = el("text",{class:"d", x:px, y:32 + n.tl.length*15 + i*14}, g); t.textContent = ln; });
+  if(n.c){ el("circle",{class:"cflag", cx:NODE_W-12, cy:12, r:8}, g); const ct = el("text",{class:"cflagt", x:NODE_W-12, y:15.5, "text-anchor":"middle"}, g); ct.textContent = "!"; }
+  g.addEventListener("click", ev=>{ ev.stopPropagation(); if(!moved) selectNode(n.id); });
+  nodeEls[n.id] = g;
+});
+
+// ---------- interaction ----------
+const panel = document.getElementById("panel");
+const bar = document.getElementById("stories");
+const nameOf = id => byId[id].t;
+const chip = st => `<span class="chip" style="color:${SCOL[st]};border-color:${SCOL[st]}">${STATUS[st]}</span>`;
+function clear(){
+  svg.classList.remove("dim");
+  vp.querySelectorAll(".on,.onup,.sel").forEach(x=>x.classList.remove("on","onup","sel"));
+  bar.querySelectorAll("button").forEach(b=>b.classList.remove("on"));
+}
+function walk(start, dir){
+  const seen = new Set([start]), q = [start], es = [];
+  while(q.length){ const cur = q.shift(); E.forEach(e=>{ const from = dir>0?e.f:e.t, to = dir>0?e.t:e.f; if(from===cur){ es.push(e); if(!seen.has(to)){ seen.add(to); q.push(to); } } }); }
+  return {nodes:seen, edges:es};
+}
+function confHtml(ids){ return (ids||[]).map(c=>`<div class="conf"><b>${CONF[c].t}:</b> ${CONF[c].x}</div>`).join(""); }
+function selectNode(id){
+  clear(); svg.classList.add("dim");
+  const n = byId[id]; nodeEls[id].classList.add("sel");
+  const dn = walk(id,1), upw = walk(id,-1);
+  dn.nodes.forEach(x=>nodeEls[x].classList.add("on")); dn.edges.forEach(e=>e.el.classList.add("on"));
+  upw.nodes.forEach(x=>nodeEls[x].classList.add("on")); upw.edges.forEach(e=>e.el.classList.add("onup"));
+  const ins = E.filter(e=>e.t===id), outs = E.filter(e=>e.f===id);
+  const li = (e, other) => `<li><b>${nameOf(other)}</b>: ${e.why}${e.h?' <i style="color:var(--hard)">(hard gate)</i>':''}${e.w?' <i style="color:var(--muted)">(soft link)</i>':''}</li>`;
+  panel.innerHTML = `<h2>${n.t}</h2><div class="meta">${chip(n.st)} ${STAGES[n.col].label} &middot; ${LANES.find(l=>l.id===n.lane).label}</div>
+    <div><b>${n.d}</b></div>
+    <div class="k">Details</div><ul>${n.det.map(x=>`<li>${x}</li>`).join("")}</ul>
+    ${n.c?`<div class="k">Open conflict</div>${confHtml(n.c)}`:""}
+    <div class="k" style="color:var(--up)">Needs (upstream)</div>${ins.length?`<ul>${ins.map(e=>li(e,e.f)).join("")}</ul>`:`<p style="color:var(--muted)">Nothing upstream on this map.</p>`}
+    <div class="k" style="color:var(--hi)">Drives (downstream)</div>${outs.length?`<ul>${outs.map(e=>li(e,e.t)).join("")}</ul>`:`<p style="color:var(--muted)">End of chain.</p>`}
+    <div class="src">Source: ${n.src}</div>`;
+  location.hash = id;
+}
+function selectStage(i){
+  clear(); svg.classList.add("dim");
+  const s = STAGES[i]; stageEls[s.id].classList.add("sel");
+  const items = N.filter(n=>n.col===i); items.forEach(n=>nodeEls[n.id].classList.add("on"));
+  E.forEach(e=>{ if(byId[e.f].col===i || byId[e.t].col===i) e.el.classList.add("on"); });
+  panel.innerHTML = `<h2>${s.label}</h2><div class="meta">${s.d}</div><p>${s.why}</p><div class="k">In this stage</div><ul>${items.map(n=>`<li>${chip(n.st)}<a href="#${n.id}" style="color:var(--ink)" onclick="selectNode('${n.id}');return false;">${n.t}</a>: ${n.d}</li>`).join("")}</ul>`;
+}
+function selectStory(s, btn){
+  clear(); svg.classList.add("dim"); btn.classList.add("on");
+  s.ids.forEach(id=>nodeEls[id].classList.add("on"));
+  E.forEach(e=>{ if(s.ids.includes(e.f) && s.ids.includes(e.t)) e.el.classList.add("on"); });
+  const confs = s.conf ? Object.keys(CONF) : [];
+  panel.innerHTML = `<h2>${s.name}</h2>${s.html}${confHtml(confs)}<div class="k">Items</div><ul>${s.ids.map(id=>`<li>${chip(byId[id].st)}<a href="#${id}" style="color:var(--ink)" onclick="selectNode('${id}');return false;">${nameOf(id)}</a>: ${byId[id].d}</li>`).join("")}</ul><p style="color:var(--muted);font-size:12.5px">Click any item to trace it.</p>`;
+}
+STORIES.forEach(s=>{ const b=document.createElement("button"); b.textContent=s.name; b.onclick=()=>selectStory(s,b); bar.appendChild(b); });
+function intro(){
+  panel.innerHTML = `<h2>${D.introTitle}</h2>${D.intro}
+  ${Object.keys(CONF).length?`<div class="k">Open conflicts</div>${confHtml(Object.keys(CONF))}`:""}
+  <div class="k">How to use</div><ul><li>Click a box to trace what it needs (amber) and what it drives (blue).</li><li>Click a stage header for everything in that window.</li><li>Use Stories for guided views. Tap empty space to reset.</li></ul>
+  <div class="src">Sources: ${D.sources}</div>`;
+}
+
+// ---------- pan / zoom (mouse, wheel, touch pinch) ----------
+let sc = 1, ox = 0, oy = 0, moved = false;
+const wrapEl = document.getElementById("wrap");
+function apply(){ vp.setAttribute("transform", `translate(${ox},${oy}) scale(${sc})`); }
+function fit(){ const r = wrapEl.getBoundingClientRect(); sc = Math.min(r.width/W, r.height/H); ox = (r.width - W*sc)/2; oy = Math.max(0,(r.height - H*sc)/2); apply(); }
+function zoomAt(f, cx, cy){ const ns = Math.max(0.15, Math.min(4, sc*f)); ox = cx - (cx-ox)*(ns/sc); oy = cy - (cy-oy)*(ns/sc); sc = ns; apply(); }
+function goToday(){ const r = wrapEl.getBoundingClientRect(); sc = Math.max(0.6, Math.min(1, r.height/H*1.6)); ox = r.width*0.35 - (tx)*sc; oy = 10; apply(); }
+wrapEl.addEventListener("wheel", ev=>{ ev.preventDefault(); const r = wrapEl.getBoundingClientRect(); const f = ev.ctrlKey ? Math.exp(-ev.deltaY*0.01) : (ev.deltaY<0?1.12:1/1.12); if(ev.ctrlKey || !ev.shiftKey && Math.abs(ev.deltaY)>Math.abs(ev.deltaX)) zoomAt(f, ev.clientX-r.left, ev.clientY-r.top); else { ox -= ev.deltaX; apply(); } }, {passive:false});
+const ptrs = new Map(); let pinch0 = null, start = null;
+wrapEl.addEventListener("pointerdown", ev=>{ ptrs.set(ev.pointerId, {x:ev.clientX, y:ev.clientY}); moved = false; start = {x:ev.clientX, y:ev.clientY, ox, oy};
+  if(ptrs.size===2){ const [p1,p2] = [...ptrs.values()]; pinch0 = {d:Math.hypot(p1.x-p2.x,p1.y-p2.y), sc, ox, oy, cx:(p1.x+p2.x)/2, cy:(p1.y+p2.y)/2}; } });
+wrapEl.addEventListener("pointermove", ev=>{ if(!ptrs.has(ev.pointerId)) return; ptrs.set(ev.pointerId, {x:ev.clientX, y:ev.clientY});
+  const r = wrapEl.getBoundingClientRect();
+  if(ptrs.size===2 && pinch0){ const [p1,p2] = [...ptrs.values()]; const d = Math.hypot(p1.x-p2.x,p1.y-p2.y); const ns = Math.max(0.15, Math.min(4, pinch0.sc*d/pinch0.d)); const cx = pinch0.cx - r.left, cy = pinch0.cy - r.top; const mx=(p1.x+p2.x)/2 - r.left, my=(p1.y+p2.y)/2 - r.top; ox = mx - (cx-pinch0.ox)*(ns/pinch0.sc); oy = my - (cy-pinch0.oy)*(ns/pinch0.sc); sc = ns; moved = true; apply(); return; }
+  if(ptrs.size===1 && start){ const dx = ev.clientX-start.x, dy = ev.clientY-start.y; if(Math.abs(dx)+Math.abs(dy) > 5){ moved = true; wrapEl.classList.add("drag"); } if(moved){ ox = start.ox + dx; oy = start.oy + dy; apply(); } } });
+function up(ev){ ptrs.delete(ev.pointerId); if(ptrs.size<2) pinch0 = null; if(ptrs.size===0){ wrapEl.classList.remove("drag"); start = null; } else { const p=[...ptrs.values()][0]; start = {x:p.x, y:p.y, ox, oy}; } }
+["pointerup","pointercancel","pointerleave"].forEach(t=>wrapEl.addEventListener(t, up));
+svg.addEventListener("click", ()=>{ if(moved) return; clear(); intro(); location.hash=""; });
+document.getElementById("zi").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(1.25, r.width/2, r.height/2); };
+document.getElementById("zo").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(0.8, r.width/2, r.height/2); };
+document.getElementById("fit").onclick = fit;
+document.getElementById("here").onclick = ()=>{ goToday(); if(STORIES.length) selectStory(STORIES[0], bar.querySelectorAll("button")[0]); };
+let lastW = window.innerWidth; window.addEventListener("resize", ()=>{ if(Math.abs(window.innerWidth-lastW)>80){ lastW = window.innerWidth; if(window.innerWidth<900) goToday(); else fit(); } });
+intro(); if(window.innerWidth<900) goToday(); else fit();
+const h0 = location.hash.slice(1); if(byId[h0]) selectNode(h0);
+</script>
+</body>
+</html>
