@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
+<title>PR Thermal (Guayama C2G): process map and gates</title>
+<style>
+:root{
+  --bg:#0b0f14; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --lane:#0f1620; --lane2:#0b0f14;
+  --card:#111827; --panel:#0f1620; --edge:#475569; --hi:#60a5fa; --up:#fbbf24;
+  --done:#22c55e; --donebg:#0c2a18; --now:#3b82f6; --nowbg:#0d2244; --fut:#64748b;
+  --open:#f97316; --openbg:#341a08; --hard:#ef4444; --hardbg:#3a0d0d; --soft:#f59e0b; --softbg:#352506;
+  --ms:#e2e8f0; --today:#38bdf8;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{display:flex;flex-direction:column;margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;overflow:hidden}
+header{padding:10px 16px 2px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12.5px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px}
+.bar b{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+button{font:inherit;font-size:13px;border:1px solid #334155;background:var(--card);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--hi)}
+button.on{background:var(--hi);border-color:var(--hi);color:#0b0f14}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:0 16px 7px;color:var(--muted);font-size:12px;align-items:center}
+.sw{display:inline-block;width:14px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:2px solid}
+.zoom{margin-left:auto;display:flex;gap:4px;align-items:center}
+.zoom button{padding:3px 10px}
+main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
+#wrap{flex:1;overflow:hidden;min-width:0;position:relative;cursor:grab;touch-action:none;background:var(--bg)}
+#wrap.drag{cursor:grabbing}
+svg{display:block;width:100%;height:100%}
+#panel{width:390px;flex:none;overflow:auto;padding:14px 16px 20px;background:var(--panel);border-left:1px solid var(--line)}
+@media (max-width:900px){main{flex-direction:column}#panel{width:auto;max-height:42vh;border-left:0;border-top:1px solid var(--line)} h1{font-size:15px} .sub{display:none} .bar,.legend{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none} .legend{font-size:11px;gap:9px} .legend .zoom{position:sticky;right:0;background:var(--bg);padding-left:6px} button{padding:4px 10px;font-size:12.5px} header{padding:8px 12px 0}}
+#panel h2{font-size:16px;margin:0 0 4px}
+#panel .meta{color:var(--muted);font-size:12.5px;margin-bottom:8px}
+#panel ul{margin:4px 0 10px;padding-left:18px}
+#panel li{margin:4px 0}
+#panel .k{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:12px}
+#panel .src{color:var(--muted);font-style:italic;font-size:12.5px;margin-top:12px}
+#panel .conf{border-left:3px solid var(--open);background:#1a1208;padding:6px 10px;border-radius:4px;margin:6px 0;font-size:13px}
+#panel p{margin:0 0 8px}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;border:1.5px solid;margin-right:6px;text-transform:uppercase;letter-spacing:.04em}
+.lanebg{fill:var(--lane)} .lanebg.alt{fill:var(--lane2)}
+.lanelbl{fill:var(--muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.stage line{stroke:#334155;stroke-width:1.2;stroke-dasharray:3 5}
+.stage rect{fill:#1e293b;stroke:#334155}
+.stage text{fill:var(--ink);font-weight:700;font-size:12px}
+.stage .d{fill:var(--muted);font-weight:400;font-size:11px}
+.stage{cursor:pointer}
+.stage.sel rect{fill:#1e3a5f;stroke:var(--hi)}
+.node{cursor:pointer}
+.node text{fill:var(--ink);font-size:12.5px}
+.node text.t{font-weight:700}
+.node text.d{fill:var(--muted);font-size:11.5px}
+.node text.tag{font-size:9.5px;font-weight:800;letter-spacing:.06em}
+.node .box{stroke-width:1.6}
+.node.done .box{fill:var(--donebg);stroke:var(--done)} .node.done .tag{fill:var(--done)}
+.node.now .box{fill:var(--nowbg);stroke:var(--now);stroke-width:3} .node.now .tag{fill:var(--now)}
+.node.future .box{fill:transparent;stroke:var(--fut);stroke-dasharray:6 4} .node.future .tag{fill:var(--fut)}
+.node.open .box{fill:var(--openbg);stroke:var(--open);stroke-width:2} .node.open .tag{fill:var(--open)}
+.node.hard .box{fill:var(--hardbg);stroke:var(--hard);stroke-width:3} .node.hard .tag{fill:var(--hard)}
+.node.soft .box{fill:var(--softbg);stroke:var(--soft);stroke-width:2} .node.soft .tag{fill:var(--soft)}
+.node.ms .box{fill:var(--ms);stroke:var(--ms)} .node.ms text{fill:#0b0f14} .node.ms .tag{fill:#334155}
+.node:hover .box{filter:brightness(1.35)}
+.node.sel .box{stroke:var(--hi)!important;stroke-width:3.5!important;stroke-dasharray:none!important}
+.cflag{fill:var(--open)} .cflagt{fill:#0b0f14!important;font-size:10px!important;font-weight:900}
+.edge{fill:none;stroke:var(--edge);stroke-width:1.5;opacity:.7}
+.edge.hardE{stroke:var(--hard);stroke-width:3;opacity:.85}
+.edge.weak{stroke-dasharray:5 4}
+.today line{stroke:var(--today);stroke-width:2;stroke-dasharray:6 4}
+.today rect{fill:var(--today)} .today text{fill:#0b0f14;font-weight:800;font-size:11.5px}
+.dim .node,.dim .stage{opacity:.2}
+.dim .edge{opacity:.07}
+.dim .node.on,.dim .node.sel{opacity:1}
+.dim .edge.on{opacity:1;stroke:var(--hi);stroke-width:2.6}
+.dim .edge.onup{opacity:1;stroke:var(--up);stroke-width:2.6}
+.dim .edge.hardE.on,.dim .edge.hardE.onup{stroke-width:3.5}
+</style>
+</head>
+<body>
+<header>
+  <h1>PR Thermal (Guayama coal-to-gas): where we are, what depends on what, key gates</h1>
+  <div class="sub">Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage for dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave a hard gate. An orange &quot;!&quot; marks an open conflict. Nothing is logged between 2026.07.06 and 2026.10.05, so several items say &quot;not logged&quot;.</div>
+</header>
+<div class="bar" id="stories"><b>Stories</b></div>
+<div class="legend">
+  <span><span class="sw" style="background:var(--donebg);border-color:var(--done)"></span>Done</span>
+  <span><span class="sw" style="background:var(--nowbg);border-color:var(--now)"></span>In progress</span>
+  <span><span class="sw" style="background:transparent;border-color:var(--fut);border-style:dashed"></span>Future</span>
+  <span><span class="sw" style="background:var(--openbg);border-color:var(--open)"></span>Open / unresolved</span>
+  <span><span class="sw" style="background:var(--hardbg);border-color:var(--hard)"></span>Hard gate</span>
+  <span><span class="sw" style="background:var(--softbg);border-color:var(--soft)"></span>Soft gate</span>
+  <span><span class="sw" style="background:var(--ms);border-color:var(--ms)"></span>Fixed milestone</span>
+  <span><span class="sw" style="background:var(--hi);border-color:var(--hi)"></span>drives (downstream)</span>
+  <span><span class="sw" style="background:var(--up);border-color:var(--up)"></span>needs (upstream)</span>
+  <span class="zoom"><button id="zo">-</button><button id="zi">+</button><button id="fit">Fit</button><button id="here">Today</button></span>
+</div>
+<main><div id="wrap"><svg id="map"><g id="vp"></g></svg></div><div id="panel"></div></main>
+
+<script>
+const D = {"title": "PR Thermal (Guayama C2G): process map and gates", "h1": "PR Thermal (Guayama coal-to-gas): where we are, what depends on what, key gates", "sub": "Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage for dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave a hard gate. An orange \"!\" marks an open conflict. Nothing is logged between 2026.07.06 and 2026.10.05, so several items say \"not logged\".", "today": {"col": 3, "label": "YOU ARE HERE: Tue 10/6"}, "stages": [{"id": "s1", "label": "1. Concept + Class 4", "d": "2025 to May 2026", "why": "Stage 1 locked on 100 MW Wartsila RICE. B&V conceptual design report received 2026.05.12; SME review and consolidated comments 5/18."}, {"id": "s2", "label": "2. Assumption book + cash flow", "d": "May to Jul 2026", "why": "Pre-con inputs to the B&V assumption book (end-of-June drop dead). PREPA wants AES sign-off; Brandon will not sign off on an incomplete project. Cash flows and model outputs being finalized 7/06."}, {"id": "s3", "label": "3. Stage 2 tech + approvals", "d": "Jul 2026", "why": "500 MW Wartsila FlexiCycle selected for the PREPA indicative proposal (7/06). Path: internal alignment, CAIC approval, indicative proposal to PREPA. Technical diligence first."}, {"id": "s4", "label": "4. 10% design proposal", "d": "Oct 2026", "why": "B&V proposal for 10%s (9/29 document) to review with team comments; Matt wants a review call with Brandon and Brian."}, {"id": "s5", "label": "5. PPOA + EPC RFP", "d": "targets passed, not logged", "why": "PPOA targeted before summer 2026 (PPA signing July or August 2026). EPC RFP targeted Q3 2026. Neither outcome is logged."}, {"id": "s6", "label": "6. Stage 1 NTP + build", "d": "NTP Mar 2027", "why": "Stage 1 NTP target March 2027, 24-month construction. GSU and HV breaker lead time about 3 years. MC drop-dead Nov 2028."}, {"id": "s7", "label": "7. CODs", "d": "Apr 2029, Oct 2032", "why": "Stage 1 COD target April 2029. Stage 2 COD target October 2032."}], "lanes": [{"id": "eng", "label": "Design + technology"}, {"id": "cost", "label": "Cost + EPC"}, {"id": "com", "label": "Commercial (PREPA)"}, {"id": "perm", "label": "Permits + interconnection"}, {"id": "sched", "label": "Equipment + schedule"}], "nodes": [{"id": "s1lock", "lane": "eng", "col": 0, "st": "done", "t": "Stage 1 locked", "d": "100 MW Wartsila RICE, 9 x 20V31SG", "det": ["Stage 1: 9 x 20V31SG (spark gas), 100 MW. Tech selection locked.", "All EPC bids were based on the DF model, should be SG; OEM repricing pending (as of 2026.04.21)."], "src": "PR Thermal Pillars, Equipment (Stage 1); Red Flags 2026.04.21"}, {"id": "bvc", "lane": "eng", "col": 0, "st": "done", "t": "B&V conceptual design (Class 4)", "d": "received 5/12, comments 5/18", "det": ["B&V conceptual design report received 2026.05.12; SME review kickoff.", "Open items from the review: 3 GSU / 3-bus design rationale, CEMS, heavy haul logistics (San Juan port)."], "src": "PR Thermal RN 2026.05.12, 2026.05.18; Pillars Red Flags 2026.05.18"}, {"id": "ab", "lane": "cost", "col": 1, "st": "open", "t": "Assumption book sign-off", "d": "standoff 6/15; outcome not logged", "det": ["Pre-con inputs to the B&V assumption book; end-of-June drop dead (2026.05.26).", "PREPA wants AES to sign off. Brandon: AES is not signing off on an incomplete project. Some areas should be Brian or Brandon, not Matt (2026.06.15).", "No later entry on the sign-off."], "src": "PR Thermal RN 2026.05.21, 2026.05.26, 2026.06.15"}, {"id": "gaps", "lane": "cost", "col": 1, "st": "open", "t": "Under-budget items", "d": "T-line, LUMA IC, SCR, POI line, marine terminal", "det": ["T-line AB $2M vs S&L $6.649M; LUMA IC AB $1.2M vs S&L $4.828M.", "SCR $0 in AB vs RGE ~$18M; new POI line $14M not in AB; marine terminal CAPEX $0.", "Scenario 3: ~$53M IC gap if the coal PPA extends.", "As of 2026.04.21; no later update logged."], "src": "PR Thermal Pillars, Red Flags (open as of 2026.04.21)"}, {"id": "cf", "lane": "cost", "col": 1, "st": "open", "t": "Cash flows + model outputs", "d": "finalizing 7/06; not logged since", "det": ["2026.05.28: cashflow is the hard part; recategorize Southland buckets, use the BV schedule as milestone baseline; Brandon and Brian buy-in needed.", "2026.07.06: Diego, Jordan, Brandon, Angelina finalizing cash flows and model outputs, with sensitivities and CapEx error bars."], "src": "PR Thermal RN 2026.05.28, 2026.07.06"}, {"id": "coal", "lane": "com", "col": 1, "st": "open", "t": "Coal PPA extension", "d": "95% likely (Diego); not logged since April", "det": ["Diego: 95% likely the coal PPA extends. If coal runs through Stage 2 construction (Scenario 3), IC costs add ~$53M.", "PREPA will not discuss other phases until coal extension pricing is agreed (2026.01.05).", "2026.04.06: 'could happen in 2 or 4 weeks'. No later entry."], "src": "PR Thermal Pillars, Commercial / PPOA (Coal PPA extension); Risk Register"}, {"id": "flex", "lane": "eng", "col": 2, "st": "done", "t": "Stage 2: 500 MW FlexiCycle", "d": "selected 7/06", "det": ["Moving forward with the 500 MW Wartsila FlexiCycle engine solution for the PREPA indicative proposal.", "Supersedes the GE 6F.03 3x1 / Siemens SGT-800 evaluation.", "Open: steam-turbine OEM for FlexiCycle."], "src": "PR Thermal RN 2026.07.06; Pillars Equipment 2026.07.06"}, {"id": "dil", "lane": "eng", "col": 2, "st": "soft", "t": "SOFT GATE: FlexiCycle diligence", "d": "OEM vs EPC roles; not logged", "det": ["Technical diligence before finalizing the PREPA proposal: internal and external discussions, OEM vs EPC roles.", "Initiate after internal approval, before presenting to PREPA.", "Reference plants: Dominican Republic and El Salvador."], "src": "PR Thermal RN 2026.07.06"}, {"id": "caic", "lane": "com", "col": 2, "st": "open", "t": "Internal alignment + CAIC", "d": "after cash flows; not logged", "det": ["Path after cash-flow finalization: internal alignment, CAIC approval, then indicative proposal to PREPA (Diego, Casper, 7/06).", "Expect to use amended PBA funds; awaiting lender sign-off on the COLA amendment."], "src": "PR Thermal RN 2026.07.06"}, {"id": "bv10", "lane": "eng", "col": 3, "st": "now", "t": "B&V proposal for 10%s", "d": "9/29 document, team review", "det": ["Need to review the BV proposal for 10%s and get team comments on the 9/29 document.", "Matt wants a review call with Brandon and Brian.", "Which stage or scope the 10%s cover is not stated."], "src": "PR Thermal RN 2026.10.05; Pillars Engineering 2026.10.05"}, {"id": "prop", "lane": "com", "col": 4, "st": "open", "t": "Indicative proposal to PREPA", "d": "not logged as sent", "det": ["Follows CAIC approval and FlexiCycle diligence (7/06).", "PREPA pricing history: $150/MWh initial (2025.08.18); PREPA did not like the $155/MWh starting number (2026.03.30)."], "src": "PR Thermal RN 2026.07.06; Pillars PREPA pricing negotiation points"}, {"id": "ppoa", "lane": "com", "col": 4, "st": "open", "t": "PPOA execution", "d": "target before summer 2026; not logged", "det": ["PPOA execution before summer 2026, ahead of the PREPA 3,000 MW tender.", "PPA signing targeted July or August 2026 (2026.02.23).", "No execution logged."], "c": ["ppoa"], "src": "PR Thermal Pillars, Commercial / PPOA (PPOA timing)"}, {"id": "rfp", "lane": "cost", "col": 4, "st": "open", "t": "EPC RFP", "d": "target Q3 2026; not logged", "det": ["EPC RFP target Q3 2026 (moved from Q4 2025, Q1 2026).", "Pricing approach: indicative at 10%, firm base at 30% (2025.08.25)."], "src": "PR Thermal Pillars, Contracting (EPC RFP timeline evolution)"}, {"id": "psd", "lane": "perm", "col": 4, "st": "open", "t": "Air permit path", "d": "minor ~40 weeks vs PSD up to 2 years", "det": ["Minor permit ~40 weeks; major (PSD) up to two years.", "Stage 1 depends on PSD: 4-6 months without, 18-24 months with (Trevor, 2026.02.09).", "Open: does 100 MW still fit under the minor threshold with the Wartsila emissions profile?", "Trevor (permitting) left June 15; replacement not firmed up as of 2026.05.12."], "src": "PR Thermal Pillars, Schedule (permitting placeholders); Risk Register 2026.05.12; Open questions 2026.04.21"}, {"id": "luma", "lane": "perm", "col": 4, "st": "open", "t": "LUMA formal IC study", "d": "network upgrades TBD", "det": ["What the formal LUMA IC study finds for network upgrades is open (as of 2026.04.21).", "S&L POI Facility Study Rev 1 (2026.04.02) recommends a $14M cut-in to Line 51000."], "src": "PR Thermal Pillars, Interconnection; Open questions 2026.04.21"}, {"id": "gsu", "lane": "sched", "col": 5, "st": "hard", "t": "HARD GATE: GSU / HV breaker lead", "d": "~3 years; order needed June 2026", "det": ["Lead time for GSUs and HV breakers around three years (Casper, 2026.04.20).", "Long pole: need to place the transformer order in June 2026 (2026.04.13). Option: pay a premium for stock from AUI or others.", "Whether the order was placed is not logged."], "src": "PR Thermal Pillars, Schedule 2026.04.13, 2026.04.20; Risk Register"}, {"id": "ntp", "lane": "sched", "col": 5, "st": "future", "t": "Stage 1 NTP", "d": "March 2027, 24-month build", "det": ["Stage 1 NTP target March 2027; 24-month construction."], "src": "PR Thermal Pillars, Schedule anchors"}, {"id": "mcdd", "lane": "sched", "col": 6, "st": "ms", "t": "Stage 1 MC drop-dead", "d": "no later than Nov 2028", "det": ["Mechanical completion no later than Nov 2028: political deadline due to elections (2025.08.25 note)."], "src": "PR Thermal Pillars, Schedule anchors"}, {"id": "cod1", "lane": "sched", "col": 6, "st": "ms", "t": "Stage 1 COD April 2029", "d": "B&V schedule shows 2030", "det": ["Stage 1 COD target April 2029.", "B&V and EPC schedules show substantial completion in 2030; offtaker would decline Stage 1 at that date. First half of 2029 is the latest (2026.04.13)."], "c": ["cod1"], "src": "PR Thermal Pillars, Schedule anchors; Schedule 2026.04.13"}, {"id": "cod2", "lane": "sched", "col": 6, "st": "ms", "t": "Stage 2 COD October 2032", "d": "target", "det": ["Stage 2 COD target October 2032."], "src": "PR Thermal Pillars, Schedule anchors"}], "edges": [{"f": "bvc", "t": "ab", "why": "B&V estimate is the assumption book basis"}, {"f": "s1lock", "t": "ab", "why": "Stage 1 configuration priced", "w": 1}, {"f": "ab", "t": "cf", "why": "inputs drive cash flows"}, {"f": "gaps", "t": "cf", "why": "under-budget items change the model", "w": 1}, {"f": "coal", "t": "gaps", "why": "Scenario 3 adds ~$53M IC"}, {"f": "cf", "t": "caic", "why": "finalized cash flows go to CAIC"}, {"f": "flex", "t": "dil", "why": "diligence on the chosen Stage 2 tech"}, {"f": "dil", "t": "prop", "why": "diligence before presenting to PREPA"}, {"f": "caic", "t": "prop", "why": "approval before the indicative proposal"}, {"f": "coal", "t": "ppoa", "why": "PREPA holds other phases until coal pricing agreed"}, {"f": "prop", "t": "ppoa", "why": "proposal to PPOA"}, {"f": "bvc", "t": "bv10", "why": "next design step after conceptual"}, {"f": "bv10", "t": "rfp", "why": "indicative EPC pricing at 10%"}, {"f": "ppoa", "t": "ntp", "why": "offtake before NTP"}, {"f": "rfp", "t": "ntp", "why": "EPC in place for NTP"}, {"f": "psd", "t": "ntp", "why": "permit before construction"}, {"f": "luma", "t": "ntp", "why": "IC scope and cost", "w": 1}, {"f": "gsu", "t": "mcdd", "why": "3-year lead sets the earliest MC", "h": 1}, {"f": "gsu", "t": "cod1", "why": "long pole for Stage 1 COD", "h": 1}, {"f": "ntp", "t": "mcdd", "why": "24-month construction"}, {"f": "mcdd", "t": "cod1", "why": "commissioning to COD"}, {"f": "flex", "t": "cod2", "why": "Stage 2 technology", "w": 1}], "conf": {"cod1": {"t": "Stage 1 completion", "x": "Target COD April 2029, but the B&V and EPC schedules show substantial completion in 2030 (2026.04.13), driven by ~3-year GSU lead time."}, "ppoa": {"t": "PPOA timing", "x": "PPOA was targeted before summer 2026 and PPA signing July or August 2026. Those dates have passed and no execution is logged."}}, "stories": [{"name": "Where we are today", "ids": ["bv10", "flex", "dil", "caic", "cf", "ab"], "html": "<p>The latest entry (10/05) is the B&V proposal for 10%s, out for team review. Before that, 7/06 set Stage 2 on the 500 MW Wartsila FlexiCycle and laid out the path: finalize cash flows, internal alignment and CAIC, then an indicative proposal to PREPA. Nothing between 7/06 and 10/05 is logged.<\/p>"}, {"name": "Commercial path", "ids": ["coal", "caic", "prop", "ppoa", "ntp"], "html": "<p>Coal PPA extension (95% likely) gates PREPA talks on other phases. Indicative proposal follows CAIC and diligence. PPOA and PPA targets have passed with no execution logged.<\/p>"}, {"name": "Stage 1 critical path", "ids": ["gsu", "ntp", "psd", "rfp", "mcdd", "cod1"], "html": "<p>About 3-year GSU and HV breaker lead time is the long pole. Stage 1 needs MC by Nov 2028 and COD April 2029; B&V's schedule shows 2030.<\/p>"}, {"name": "Open conflicts", "ids": ["cod1", "ppoa"], "conf": true, "html": "<p>Items carrying an unresolved conflict in the sources:<\/p>"}], "introTitle": "PR Thermal today", "intro": "<p>PR Thermal (AES Guayama coal-to-gas) is between <b>conceptual design and a 10% design proposal<\/b>: B&V's proposal for 10%s (9/29) is out for team review. Stage 1 is locked on 100 MW Wartsila RICE; Stage 2 moved to a 500 MW Wartsila FlexiCycle on 7/06.<\/p><p>Commercial path per 7/06: cash flows, internal alignment and CAIC, then an indicative proposal to PREPA. The PPOA, EPC RFP and GSU order targets have passed without a logged outcome.<\/p><p>The long pole is the <b>~3-year GSU lead time<\/b> against an April 2029 Stage 1 COD.<\/p>", "sources": "PR Thermal Running Notes (through 2026.10.05) and 15 Pillars (Notion). Nothing is logged between 2026.07.06 and 2026.10.05. No new analysis."};
+const STAGES = D.stages, LANES = D.lanes, N = D.nodes, E = D.edges, CONF = D.conf || {}, STORIES = D.stories || [];
+const STATUS = {done:"Done", now:"In progress", future:"Future", open:"Open", hard:"Hard gate", soft:"Soft gate", ms:"Milestone"};
+const SCOL = {done:"var(--done)", now:"var(--now)", future:"var(--fut)", open:"var(--open)", hard:"var(--hard)", soft:"var(--soft)", ms:"var(--ms)"};
+
+// ---------- layout ----------
+const LANE_LBL_W = 150, COL_W = 250, NODE_W = 214, TOP = 78, VGAP = 14, LANE_PAD = 16;
+const byId = {}; N.forEach(n=>byId[n.id]=n);
+function wrap(txt, max){ const w=txt.split(" "); const lines=[""]; w.forEach(x=>{ if((lines[lines.length-1]+" "+x).trim().length>max) lines.push(x); else lines[lines.length-1]=(lines[lines.length-1]+" "+x).trim(); }); return lines.filter(Boolean); }
+N.forEach(n=>{ n.tl = wrap(n.t, 27); n.dl = wrap(n.d, 32); n.h = 22 + n.tl.length*15 + n.dl.length*14 + 6; });
+const laneY = {}; let y = TOP;
+LANES.forEach(l=>{
+  let maxH = 60;
+  STAGES.forEach((s,c)=>{ const items = N.filter(n=>n.lane===l.id && n.col===c); const h = items.reduce((a,n)=>a+n.h+VGAP,0)-VGAP; maxH = Math.max(maxH,h); });
+  laneY[l.id] = {y, h:maxH + LANE_PAD*2}; y += maxH + LANE_PAD*2;
+});
+const H = y + 20, W = LANE_LBL_W + STAGES.length*COL_W + 20;
+LANES.forEach(l=>{ STAGES.forEach((s,c)=>{ let yy = laneY[l.id].y + LANE_PAD; N.filter(n=>n.lane===l.id && n.col===c).forEach(n=>{ n.x = LANE_LBL_W + c*COL_W + (COL_W-NODE_W)/2; n.y = yy; yy += n.h + VGAP; }); }); });
+
+const svg = document.getElementById("map"), vp = document.getElementById("vp");
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs={}, parent=vp) => { const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; };
+const defs = el("defs",{},svg);
+[["a","#475569"],["ah","#60a5fa"],["au","#fbbf24"],["ar","#ef4444"]].forEach(([id,c])=>{
+  const m = el("marker",{id, viewBox:"0 0 10 10", refX:9, refY:5, markerWidth:5, markerHeight:5, orient:"auto-start-reverse"}, defs);
+  el("path",{d:"M0,0 L10,5 L0,10 z", fill:c}, m);
+});
+LANES.forEach((l,i)=>{
+  el("rect",{class:"lanebg"+(i%2?" alt":""), x:0, y:laneY[l.id].y, width:W, height:laneY[l.id].h});
+  const lines = wrap(l.label, 16);
+  lines.forEach((ln,j)=>{ const t = el("text",{class:"lanelbl", x:14, y:laneY[l.id].y + laneY[l.id].h/2 + 4 + (j-(lines.length-1)/2)*15}); t.textContent = ln; });
+});
+const stageEls = {};
+STAGES.forEach((s,i)=>{
+  const x0 = LANE_LBL_W + i*COL_W, cx = x0 + COL_W/2;
+  const g = el("g",{class:"stage"});
+  el("line",{x1:x0+COL_W, y1:TOP-6, x2:x0+COL_W, y2:H-10}, g);
+  el("rect",{x:x0+10, y:14, width:COL_W-20, height:46, rx:10}, g);
+  const t = el("text",{x:cx, y:33, "text-anchor":"middle"}, g); t.textContent = s.label;
+  const d = el("text",{class:"d", x:cx, y:50, "text-anchor":"middle"}, g); d.textContent = s.d;
+  g.addEventListener("click", ev=>{ ev.stopPropagation(); selectStage(i); });
+  stageEls[s.id] = g;
+});
+// today marker, placed at the start of the stage holding the current position
+const tx = LANE_LBL_W + D.today.col*COL_W + 8;
+const tg = el("g",{class:"today"});
+el("line",{x1:tx, y1:62, x2:tx, y2:H-10}, tg);
+el("rect",{x:tx-4, y:62, width:Math.max(150, D.today.label.length*7+12), height:20, rx:10}, tg);
+const tt = el("text",{x:tx+6, y:76}, tg); tt.textContent = D.today.label;
+
+const edgeLayer = el("g");
+E.forEach(e=>{
+  const a = byId[e.f], b = byId[e.t]; let d;
+  if(a.col === b.col){
+    const up = b.y < a.y;
+    const x1 = a.x + NODE_W/2 + 30, y1 = up ? a.y : a.y + a.h, y2 = up ? b.y + b.h : b.y;
+    d = `M${x1},${y1} L${x1},${y2}`;
+  } else {
+    const s0 = {x:a.x+NODE_W, y:a.y+a.h/2}, t0 = {x:b.x, y:b.y+b.h/2};
+    const mx = (s0.x+t0.x)/2;
+    d = `M${s0.x},${s0.y} C${mx},${s0.y} ${mx},${t0.y} ${t0.x-2},${t0.y}`;
+  }
+  e.el = el("path",{class:"edge"+(e.h?" hardE":"")+(e.w?" weak":""), d, "marker-end":e.h?"url(#ar)":"url(#a)"}, edgeLayer);
+});
+const nodeEls = {};
+N.forEach(n=>{
+  const g = el("g",{class:"node "+n.st, transform:`translate(${n.x},${n.y})`});
+  el("rect",{class:"box", width:NODE_W, height:n.h, rx: n.st==="ms" ? n.h/2 : (n.st==="hard"||n.st==="soft" ? 3 : 8)}, g);
+  if(n.st==="hard"||n.st==="soft"){ el("path",{d:`M0,${n.h/2} L10,0 M0,${n.h/2} L10,${n.h} M${NODE_W},${n.h/2} L${NODE_W-10},0 M${NODE_W},${n.h/2} L${NODE_W-10},${n.h}`, stroke:n.st==="hard"?"var(--hard)":"var(--soft)", "stroke-width":2, fill:"none"}, g); }
+  const px = n.st==="ms" ? 18 : 14;
+  const tag = el("text",{class:"tag", x:px, y:15}, g); tag.textContent = STATUS[n.st].toUpperCase();
+  n.tl.forEach((ln,i)=>{ const t = el("text",{class:"t", x:px, y:32 + i*15}, g); t.textContent = ln; });
+  n.dl.forEach((ln,i)=>{ const t = el("text",{class:"d", x:px, y:32 + n.tl.length*15 + i*14}, g); t.textContent = ln; });
+  if(n.c){ el("circle",{class:"cflag", cx:NODE_W-12, cy:12, r:8}, g); const ct = el("text",{class:"cflagt", x:NODE_W-12, y:15.5, "text-anchor":"middle"}, g); ct.textContent = "!"; }
+  g.addEventListener("click", ev=>{ ev.stopPropagation(); if(!moved) selectNode(n.id); });
+  nodeEls[n.id] = g;
+});
+
+// ---------- interaction ----------
+const panel = document.getElementById("panel");
+const bar = document.getElementById("stories");
+const nameOf = id => byId[id].t;
+const chip = st => `<span class="chip" style="color:${SCOL[st]};border-color:${SCOL[st]}">${STATUS[st]}</span>`;
+function clear(){
+  svg.classList.remove("dim");
+  vp.querySelectorAll(".on,.onup,.sel").forEach(x=>x.classList.remove("on","onup","sel"));
+  bar.querySelectorAll("button").forEach(b=>b.classList.remove("on"));
+}
+function walk(start, dir){
+  const seen = new Set([start]), q = [start], es = [];
+  while(q.length){ const cur = q.shift(); E.forEach(e=>{ const from = dir>0?e.f:e.t, to = dir>0?e.t:e.f; if(from===cur){ es.push(e); if(!seen.has(to)){ seen.add(to); q.push(to); } } }); }
+  return {nodes:seen, edges:es};
+}
+function confHtml(ids){ return (ids||[]).map(c=>`<div class="conf"><b>${CONF[c].t}:</b> ${CONF[c].x}</div>`).join(""); }
+function selectNode(id){
+  clear(); svg.classList.add("dim");
+  const n = byId[id]; nodeEls[id].classList.add("sel");
+  const dn = walk(id,1), upw = walk(id,-1);
+  dn.nodes.forEach(x=>nodeEls[x].classList.add("on")); dn.edges.forEach(e=>e.el.classList.add("on"));
+  upw.nodes.forEach(x=>nodeEls[x].classList.add("on")); upw.edges.forEach(e=>e.el.classList.add("onup"));
+  const ins = E.filter(e=>e.t===id), outs = E.filter(e=>e.f===id);
+  const li = (e, other) => `<li><b>${nameOf(other)}</b>: ${e.why}${e.h?' <i style="color:var(--hard)">(hard gate)</i>':''}${e.w?' <i style="color:var(--muted)">(soft link)</i>':''}</li>`;
+  panel.innerHTML = `<h2>${n.t}</h2><div class="meta">${chip(n.st)} ${STAGES[n.col].label} &middot; ${LANES.find(l=>l.id===n.lane).label}</div>
+    <div><b>${n.d}</b></div>
+    <div class="k">Details</div><ul>${n.det.map(x=>`<li>${x}</li>`).join("")}</ul>
+    ${n.c?`<div class="k">Open conflict</div>${confHtml(n.c)}`:""}
+    <div class="k" style="color:var(--up)">Needs (upstream)</div>${ins.length?`<ul>${ins.map(e=>li(e,e.f)).join("")}</ul>`:`<p style="color:var(--muted)">Nothing upstream on this map.</p>`}
+    <div class="k" style="color:var(--hi)">Drives (downstream)</div>${outs.length?`<ul>${outs.map(e=>li(e,e.t)).join("")}</ul>`:`<p style="color:var(--muted)">End of chain.</p>`}
+    <div class="src">Source: ${n.src}</div>`;
+  location.hash = id;
+}
+function selectStage(i){
+  clear(); svg.classList.add("dim");
+  const s = STAGES[i]; stageEls[s.id].classList.add("sel");
+  const items = N.filter(n=>n.col===i); items.forEach(n=>nodeEls[n.id].classList.add("on"));
+  E.forEach(e=>{ if(byId[e.f].col===i || byId[e.t].col===i) e.el.classList.add("on"); });
+  panel.innerHTML = `<h2>${s.label}</h2><div class="meta">${s.d}</div><p>${s.why}</p><div class="k">In this stage</div><ul>${items.map(n=>`<li>${chip(n.st)}<a href="#${n.id}" style="color:var(--ink)" onclick="selectNode('${n.id}');return false;">${n.t}</a>: ${n.d}</li>`).join("")}</ul>`;
+}
+function selectStory(s, btn){
+  clear(); svg.classList.add("dim"); btn.classList.add("on");
+  s.ids.forEach(id=>nodeEls[id].classList.add("on"));
+  E.forEach(e=>{ if(s.ids.includes(e.f) && s.ids.includes(e.t)) e.el.classList.add("on"); });
+  const confs = s.conf ? Object.keys(CONF) : [];
+  panel.innerHTML = `<h2>${s.name}</h2>${s.html}${confHtml(confs)}<div class="k">Items</div><ul>${s.ids.map(id=>`<li>${chip(byId[id].st)}<a href="#${id}" style="color:var(--ink)" onclick="selectNode('${id}');return false;">${nameOf(id)}</a>: ${byId[id].d}</li>`).join("")}</ul><p style="color:var(--muted);font-size:12.5px">Click any item to trace it.</p>`;
+}
+STORIES.forEach(s=>{ const b=document.createElement("button"); b.textContent=s.name; b.onclick=()=>selectStory(s,b); bar.appendChild(b); });
+function intro(){
+  panel.innerHTML = `<h2>${D.introTitle}</h2>${D.intro}
+  ${Object.keys(CONF).length?`<div class="k">Open conflicts</div>${confHtml(Object.keys(CONF))}`:""}
+  <div class="k">How to use</div><ul><li>Click a box to trace what it needs (amber) and what it drives (blue).</li><li>Click a stage header for everything in that window.</li><li>Use Stories for guided views. Tap empty space to reset.</li></ul>
+  <div class="src">Sources: ${D.sources}</div>`;
+}
+
+// ---------- pan / zoom (mouse, wheel, touch pinch) ----------
+let sc = 1, ox = 0, oy = 0, moved = false;
+const wrapEl = document.getElementById("wrap");
+function apply(){ vp.setAttribute("transform", `translate(${ox},${oy}) scale(${sc})`); }
+function fit(){ const r = wrapEl.getBoundingClientRect(); sc = Math.min(r.width/W, r.height/H); ox = (r.width - W*sc)/2; oy = Math.max(0,(r.height - H*sc)/2); apply(); }
+function zoomAt(f, cx, cy){ const ns = Math.max(0.15, Math.min(4, sc*f)); ox = cx - (cx-ox)*(ns/sc); oy = cy - (cy-oy)*(ns/sc); sc = ns; apply(); }
+function goToday(){ const r = wrapEl.getBoundingClientRect(); sc = Math.max(0.6, Math.min(1, r.height/H*1.6)); ox = r.width*0.35 - (tx)*sc; oy = 10; apply(); }
+wrapEl.addEventListener("wheel", ev=>{ ev.preventDefault(); const r = wrapEl.getBoundingClientRect(); const f = ev.ctrlKey ? Math.exp(-ev.deltaY*0.01) : (ev.deltaY<0?1.12:1/1.12); if(ev.ctrlKey || !ev.shiftKey && Math.abs(ev.deltaY)>Math.abs(ev.deltaX)) zoomAt(f, ev.clientX-r.left, ev.clientY-r.top); else { ox -= ev.deltaX; apply(); } }, {passive:false});
+const ptrs = new Map(); let pinch0 = null, start = null;
+wrapEl.addEventListener("pointerdown", ev=>{ ptrs.set(ev.pointerId, {x:ev.clientX, y:ev.clientY}); moved = false; start = {x:ev.clientX, y:ev.clientY, ox, oy};
+  if(ptrs.size===2){ const [p1,p2] = [...ptrs.values()]; pinch0 = {d:Math.hypot(p1.x-p2.x,p1.y-p2.y), sc, ox, oy, cx:(p1.x+p2.x)/2, cy:(p1.y+p2.y)/2}; } });
+wrapEl.addEventListener("pointermove", ev=>{ if(!ptrs.has(ev.pointerId)) return; ptrs.set(ev.pointerId, {x:ev.clientX, y:ev.clientY});
+  const r = wrapEl.getBoundingClientRect();
+  if(ptrs.size===2 && pinch0){ const [p1,p2] = [...ptrs.values()]; const d = Math.hypot(p1.x-p2.x,p1.y-p2.y); const ns = Math.max(0.15, Math.min(4, pinch0.sc*d/pinch0.d)); const cx = pinch0.cx - r.left, cy = pinch0.cy - r.top; const mx=(p1.x+p2.x)/2 - r.left, my=(p1.y+p2.y)/2 - r.top; ox = mx - (cx-pinch0.ox)*(ns/pinch0.sc); oy = my - (cy-pinch0.oy)*(ns/pinch0.sc); sc = ns; moved = true; apply(); return; }
+  if(ptrs.size===1 && start){ const dx = ev.clientX-start.x, dy = ev.clientY-start.y; if(Math.abs(dx)+Math.abs(dy) > 5){ moved = true; wrapEl.classList.add("drag"); } if(moved){ ox = start.ox + dx; oy = start.oy + dy; apply(); } } });
+function up(ev){ ptrs.delete(ev.pointerId); if(ptrs.size<2) pinch0 = null; if(ptrs.size===0){ wrapEl.classList.remove("drag"); start = null; } else { const p=[...ptrs.values()][0]; start = {x:p.x, y:p.y, ox, oy}; } }
+["pointerup","pointercancel","pointerleave"].forEach(t=>wrapEl.addEventListener(t, up));
+svg.addEventListener("click", ()=>{ if(moved) return; clear(); intro(); location.hash=""; });
+document.getElementById("zi").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(1.25, r.width/2, r.height/2); };
+document.getElementById("zo").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(0.8, r.width/2, r.height/2); };
+document.getElementById("fit").onclick = fit;
+document.getElementById("here").onclick = ()=>{ goToday(); if(STORIES.length) selectStory(STORIES[0], bar.querySelectorAll("button")[0]); };
+let lastW = window.innerWidth; window.addEventListener("resize", ()=>{ if(Math.abs(window.innerWidth-lastW)>80){ lastW = window.innerWidth; if(window.innerWidth<900) goToday(); else fit(); } });
+intro(); if(window.innerWidth<900) goToday(); else fit();
+const h0 = location.hash.slice(1); if(byId[h0]) selectNode(h0);
+</script>
+</body>
+</html>
