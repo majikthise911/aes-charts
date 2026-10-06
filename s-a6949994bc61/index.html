@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta name="robots" content="noindex,nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
 <title>Sylvan Solar: process map and gates</title>
 <style>
 :root{
@@ -84,7 +84,7 @@ svg{display:block;width:100%;height:100%}
 <body>
 <header>
   <h1>Sylvan Solar: where we are, what depends on what, key gates</h1>
-  <div class="sub">Status as of Mon 2026-10-05. Stages run left to right, one row per workstream. Click any box or stage to see dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave the permit hard gate. An orange "!" marks an open conflict.</div>
+  <div class="sub">Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage to see dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave the permit hard gate. An orange &quot;!&quot; marks an open conflict.</div>
 </header>
 <div class="bar" id="stories"><b>Stories</b></div>
 <div class="legend">
@@ -102,159 +102,10 @@ svg{display:block;width:100%;height:100%}
 <main><div id="wrap"><svg id="map"><g id="vp"></g></svg></div><div id="panel"></div></main>
 
 <script>
-const STAGES = [
-  {id:"s1", label:"1. Surveys + constraints", d:"mostly done", why:"Site inputs the EPCs price from: constraints map, easements, topo, crossing study."},
-  {id:"s2", label:"2. 10% design + RFP", d:"RFP out 9/18", why:"RFP released on Procore 9/18. AES 10% design with the new module targeted 10/23."},
-  {id:"s3", label:"3. Bid", d:"Oct to early Nov", why:"BMcD prices now off the constraints map and module specs (~10/28). Barton Malow prices after the AES 10%. Site walk Oct 19-23."},
-  {id:"s4", label:"4. Leveling + award", d:"thru 12/25/26", why:"Bid leveling and award recommendation. Working schedule shows 12/25/2026 (Copilot-sourced, unverified). CAIC is the soft gate."},
-  {id:"s5", label:"5. ESPA", d:"11/20 to 12/15/26", why:"Cash flow window 11/20 to 12/15/2026. PIC note says ESPA proceeds after a positive appeal outcome."},
-  {id:"s6", label:"6. Tech auth + early eng", d:"30% / 60%", why:"Limited BMcD technical authorization, then 30% design and geotech (~$3M) once the permit gate clears. Binding price at 30%."},
-  {id:"s7", label:"7. EPCA", d:"May vs Sep 2027", why:"EPCA date is unresolved: May 2027 in notes and P6 (5/25/27) vs 9/15/2027 in the cash flow file."},
-  {id:"s8", label:"8. Long-lead POs", d:"~9/3/2027", why:"Long-lead POs 9/3/2027 per cash flow (P6 5/12/2027). Early Q1 2027 down payments discussed."},
-  {id:"s9", label:"9. Mob + construction", d:"~3/1/2028", why:"Mobilization ~3/1/2028 on the MPSC basis, can move left if the appeal succeeds. Construction 2028 to 2029."},
-  {id:"s10", label:"10. Backfeed + COD", d:"7/13/29, ~11/1/29", why:"Backfeed 7/13/2029 (Frank via Matt). COD ~11/1/2029, end of 2029."}
-];
-const LANES = [
-  {id:"site", label:"Site + surveys"},
-  {id:"eng", label:"Design + engineering"},
-  {id:"epc", label:"EPC bid + contract"},
-  {id:"perm", label:"Permits + gates"},
-  {id:"com", label:"Commercial + cash"},
-  {id:"build", label:"Procure + build"}
-];
+const D = {"stages": [{"id": "s1", "label": "1. Surveys + constraints", "d": "mostly done", "why": "Site inputs the EPCs price from: constraints map, easements, topo, crossing study."}, {"id": "s2", "label": "2. 10% design + RFP", "d": "RFP out 9/18", "why": "RFP released on Procore 9/18. AES 10% design with the new module targeted 10/23."}, {"id": "s3", "label": "3. Bid", "d": "Oct to mid-Jan", "why": "BMcD prices now off the constraints map and module specs (~10/28). Barton Malow ROM before Thanksgiving, full proposal mid-January (10/5 kickoff call). Site walk Oct 19-23."}, {"id": "s4", "label": "4. Leveling + award", "d": "12/25/26 vs early Q1", "why": "Bid leveling and award. Working schedule shows 12/25/2026 (Copilot-sourced, unverified). The 10/5 Barton Malow kickoff recap puts EPC selection in early Q1, around late January or early February. CAIC is the soft gate."}, {"id": "s5", "label": "5. ESPA", "d": "11/20 to 12/15/26", "why": "Cash flow window 11/20 to 12/15/2026. PIC note says ESPA proceeds after a positive appeal outcome."}, {"id": "s6", "label": "6. Tech auth + early eng", "d": "30% / 60%", "why": "Limited BMcD technical authorization, then 30% design and geotech (~$3M) once the permit gate clears. Binding price at 30%."}, {"id": "s7", "label": "7. EPCA", "d": "May vs Sep 2027", "why": "EPCA date is unresolved: May 2027 in notes and P6 (5/25/27) vs 9/15/2027 in the cash flow file."}, {"id": "s8", "label": "8. Long-lead POs", "d": "~9/3/2027", "why": "Long-lead POs 9/3/2027 per cash flow (P6 5/12/2027). Early Q1 2027 down payments discussed."}, {"id": "s9", "label": "9. Mob + construction", "d": "~3/1/2028", "why": "Mobilization ~3/1/2028 on the MPSC basis, can move left if the appeal succeeds. Construction 2028 to 2029."}, {"id": "s10", "label": "10. Backfeed + COD", "d": "7/13/29, ~11/1/29", "why": "Backfeed 7/13/2029 (Frank via Matt). COD ~11/1/2029, end of 2029."}], "lanes": [{"id": "site", "label": "Site + surveys"}, {"id": "eng", "label": "Design + engineering"}, {"id": "epc", "label": "EPC bid + contract"}, {"id": "perm", "label": "Permits + gates"}, {"id": "com", "label": "Commercial + cash"}, {"id": "build", "label": "Procure + build"}], "nodes": [{"id": "cmap", "lane": "site", "col": 0, "st": "done", "t": "Constraints map", "d": "Exhibit I2 (9/8), to EPCs 9/18", "det": ["Exhibit I2 constraints map dated 9/8/2026 is the latest constraints info and supersedes earlier linework, including the March buildable-area line.", "Sent to EPCs 9/18 (PIC milestone list).", "It was not clearly labeled in the Procore Exhibits folder, which caused confusion on the 9/29 BMcD call."], "src": "Sylvan RN 2026.09.29, 2026.09.30 (PIC notes)"}, {"id": "ease", "lane": "site", "col": 0, "st": "done", "t": "Consumers crossing easement", "d": "50 ft permanent, confirmed 9/23", "det": ["Consumers (Aisling, 9/23): 50 ft is the permanent easement area, and Consumers can provide additional construction footage for installation.", "Still open with Consumers: stacking, engineered fill, proposed depths, ~20 ft deep bore, diagonal 50 ft crossing."], "src": "Sylvan RN 2026.09.24"}, {"id": "topo", "lane": "site", "col": 0, "st": "done", "t": "Topo / MMS support files", "d": "sent via Addendum 1", "det": ["BMcD was missing the topo support file (.MMS) the AutoCAD surface needs.", "Jordan: MMS and crossing exhibits sent via Addendum 1."], "src": "Sylvan RN 2026.09.29"}, {"id": "cross", "lane": "site", "col": 0, "st": "now", "t": "Crossing study", "d": "layout update, agreement scope", "det": ["Layout update expected about a week after the 9/29 BMcD call, then the crossing agreement scope.", "Open items: stacking, engineered fill, depths, ~20 ft bore, diagonal crossing.", "Feeds the MV crossing engineering in the limited BMcD technical authorization."], "src": "Sylvan RN 2026.09.24, 2026.09.29"}, {"id": "walk", "lane": "site", "col": 2, "st": "future", "t": "Site walk Oct 19-23", "d": "harvest likely; avoid Nov 1-15", "det": ["Bid site walk on Oct 19-23 per the 9/15 working RFP schedule.", "Crops likely being harvested that week.", "Avoid Nov 1-15 (rifle season)."], "src": "Sylvan RN 2026.09.24 / 09.28"}, {"id": "mod", "lane": "eng", "col": 1, "st": "done", "t": "Module basis locked", "d": "Imperial Star Orion N, 9/30", "det": ["Imperial Star Orion N ISN8-GPSB132-720/M.", "Replaces the conflicting Qcells 660 and TopCon references."], "c": ["topcon"], "src": "Sylvan RN 2026.09.30"}, {"id": "aes10", "lane": "eng", "col": 1, "st": "future", "t": "AES 10% design, new modules", "d": "target Oct 23, may slip that week", "det": ["PIC slide: 10/23 10% design with TopCon modules.", "10/1 note: 'our 10% is going to take too long' for BMcD's hybrid pricing, so BMcD proceeds off the constraints map instead.", "Barton Malow gets the full package after the AES 10%.", "10/5 Barton Malow kickoff (AI recap): 10% with the newly received specifications targeted October 23, also described as around October 25 or near end of month. Called the remaining prerequisite before the official RFP to Barton Malow."], "c": ["topcon"], "src": "Sylvan RN 2026.09.30 (PIC), 2026.10.01, 2026.10.05"}, {"id": "tauth", "lane": "eng", "col": 5, "st": "open", "t": "Limited BMcD tech authorization", "d": "planned 9/23, execution not logged", "det": ["Scope: value engineering exploration, MV crossing engineering, Consumers crossing support.", "Working schedule had execution on 9/23. Whether it was signed is not logged."], "c": ["tauth"], "src": "Sylvan RN 2026.09.15 schedule, Pillars"}, {"id": "d30", "lane": "eng", "col": 5, "st": "future", "t": "30% design + geotech (~$3M)", "d": "gated on permit outcome", "det": ["PIC: wait for a positive outcome before the ~$3M 30% design and geotech.", "30% roughly 6-8 weeks after ESPA; 30% to 60% about 10 more weeks, ~16-18 weeks after ESPA in total (Grant, 9/29).", "Working conclusion: 30% design is the binding-price point."], "src": "Sylvan RN 2026.09.29, 2026.09.30 (PIC)"}, {"id": "bind", "lane": "eng", "col": 5, "st": "future", "t": "Binding EPC price", "d": "at 30% design", "det": ["Binding pricing is set at 30% design.", "Note: December award precedes the P6 30% milestone."], "src": "Sylvan RN 2026.09.30"}, {"id": "d60", "lane": "eng", "col": 7, "st": "future", "t": "60% design", "d": "~16-18 wks after ESPA", "det": ["Dalton estimated around early April.", "Piles, the Shoals package and additional cable need the design nearer 60% before commitment."], "src": "Sylvan RN 2026.09.29"}, {"id": "rfp", "lane": "epc", "col": 1, "st": "done", "t": "RFP out on Procore 9/18", "d": "BMcD and Barton Malow only", "det": ["BMcD released 9/18; Barton Malow invited 9/22.", "Bidder O&M building and PLA/CBA correspondence sent 9/29.", "Sylvan EPC bidders are BMcD and Barton Malow (correction 2026.10.06: Flintco bids McCracken, not Sylvan)."], "src": "Sylvan RN 2026.09.22, 09.29, 09.30, 2026.10.06"}, {"id": "bmcd", "lane": "epc", "col": 2, "st": "now", "t": "BMcD hybrid pricing", "d": "updated price ~10/28", "det": ["10/1: proceed now with BMcD on the constraints map plus module specs (hybrid engineering), not waiting for the AES 10%.", "Ben supports this if the proposal includes a site plan update. Risk: BMcD's redesign with the new modules may not match how AES would do it.", "Updated pricing targeted 10/28."], "src": "Sylvan RN 2026.09.30, 2026.10.01"}, {"id": "capex", "lane": "epc", "col": 2, "st": "future", "t": "High-confidence EPC CapEx", "d": "first week of November", "det": ["Higher-confidence EPC CapEx estimate targeted for the first week of November.", "Gives a market read going into the PPA RFP."], "src": "Sylvan RN 2026.09.29, 2026.10.01"}, {"id": "bm", "lane": "epc", "col": 2, "st": "now", "t": "Barton Malow price", "d": "ROM before Thanksgiving, proposal mid-Jan", "det": ["Barton Malow stays on a separate track and gets the full package after the AES 10% design. Serves as an independent market check.", "10/5 kickoff call (AI recap): ROM can start late October; teams hoped for ROM pricing before Thanksgiving. Mid-January is the safest target for a complete proposal.", "ROM basis: parametric, roughly 10-12 line items on a dollar-per-watt basis.", "Barton Malow prefers to begin work in December and submit after the new year; heavy commitments through Thanksgiving.", "The recap also mentions 'a potential mid-July or third-week-of-July RFP'; kept as written, may be a transcription error."], "src": "Sylvan RN 2026.10.01, 2026.10.05 (kickoff call notes)"}, {"id": "bmfb", "lane": "epc", "col": 2, "st": "now", "t": "Barton Malow timing feedback", "d": "due end of week (~10/9); call on the 29th", "det": ["Jordan: provide feedback to Barton Malow on the timing they suggested by end of the week.", "Set up a call with 'BM' on the 29th to reconnect after the AES 10% with new modules is in. 'BM' and the month are not confirmed.", "Kickoff recap follow-up: review the revised schedule against commercial-offtake decision points and send a scheduling response this week."], "src": "Sylvan RN 2026.10.05 (both entries)"}, {"id": "lvl", "lane": "epc", "col": 3, "st": "future", "t": "Bid leveling + award rec", "d": "12/25/2026 vs early Q1 2027", "det": ["Working RFP schedule shows bid leveling through 12/25/2026 and a recommendation to award 12/25 (Copilot-sourced 9/15 schedule).", "10/5 Barton Malow kickoff recap: levelize the two bids apples-to-apples and select an EPC partner in early Q1, around late January or early February.", "Selected partner then starts engineering under a limited notice to proceed or engineering services agreement, 10% to 30%."], "c": ["lvl"], "src": "Sylvan RN 2026.09.30, 2026.10.05; Pillars"}, {"id": "caic", "lane": "epc", "col": 3, "st": "soft", "t": "SOFT GATE: CAIC", "d": "hold if BMcD comes in high", "det": ["If BMcD comes in high, postpone CAIC until the Barton Malow price is in.", "Cash flow for CAIC is still in progress."], "src": "Sylvan RN 2026.09.28, 2026.10.01"}, {"id": "espa", "lane": "epc", "col": 4, "st": "future", "t": "Execute ESPA", "d": "11/20 to 12/15/2026", "det": ["Cash flow file: Execute ESPA 11/20 to 12/15/2026.", "PIC note: wait for hearing, ruling and no appeal to the MI Court of Appeals, then proceed with ESPA, and sign EPCA earlier too."], "c": ["espa"], "src": "Sylvan Cash Flow 2026.09.24; RN 2026.09.30 (PIC)"}, {"id": "epca", "lane": "epc", "col": 6, "st": "open", "t": "Execute EPCA", "d": "May 2027 vs 9/15/2027", "det": ["Notes and P6: 5/25/2027. Cash flow file: 9/15/2027.", "P6 permit forecasts: local 7/30/27, state 9/30/27. The P6 EPCA date is not linked to the controlling permit path.", "Signing before permit certainty is possible as a deliberate risk call (termination and stranded-cost exposure)."], "c": ["epca"], "src": "Sylvan RN 2026.09.30; Cash Flow 2026.09.24"}, {"id": "mpsc", "lane": "perm", "col": 2, "st": "future", "t": "MPSC application filing", "d": "10/9/2026", "det": ["File Sylvan Solar application to MPSC on 10/9 (PIC upcoming list).", "State path backup; P6 state path ~9/30/2027.", "MPSC recently approved the first solar facility through its process."], "src": "Sylvan RN 2026.09.30 (PIC)"}, {"id": "cup", "lane": "perm", "col": 4, "st": "open", "t": "Garfield CUP appeal hearing", "d": "12/3/2026", "det": ["Garfield Township CUP is issued; the open issue is the appeal. AES's motion to intervene was accepted 9/14.", "Best case: unappealable permit Feb 2027 if the case is dismissed and not taken to the MI Court of Appeals.", "If it goes to the Court of Appeals: a few months of briefing, then a few months for the court to decide whether to take it."], "src": "Sylvan RN 2026.09.30 (PIC)"}, {"id": "gate", "lane": "perm", "col": 4, "st": "hard", "t": "HARD GATE: permit certainty", "d": "CUP appeal won OR MPSC certificate", "det": ["Local path: Garfield CUP appeal resolved favorably with no further appeal.", "State path: MPSC siting certificate.", "Either one releases ESPA, the ~$3M 30% design and geotech, binding pricing and EPCA execution.", "Funding posture: do not rely only on the issued CUP while the appeal is open."], "src": "Sylvan RN 2026.09.30 (PIC)"}, {"id": "ppa", "lane": "com", "col": 2, "st": "now", "t": "PPA pricing out", "d": "Consumers $85.90, DTE $87.70", "det": ["9/18 submitted $85.90/MWh to Consumers Energy (after Consumers provisional award notification).", "9/29 submitted $87.70/MWh 35 yr to DTE Energy. DTE shortlist expected late Oct to early Nov.", "Open question: sign the Consumers PPA with permitting still out, accepting erosion risk?"], "src": "Sylvan RN 2026.09.30 (PIC)"}, {"id": "cash", "lane": "com", "col": 3, "st": "now", "t": "Cash flow for CAIC", "d": "in progress", "det": ["Sylvan Cash Flow 2026.09.24.xlsx (tab 'Sylvan 9-2026 Update') carries the milestone dates used on this map.", "The %s lineup is done; the CAIC cash flow is not."], "src": "Sylvan RN 2026.09.28; Cash Flow 2026.09.24"}, {"id": "eros", "lane": "com", "col": 3, "st": "open", "t": "Erosion not quantified", "d": "Dana's question; BMcD price sets base", "det": ["Dana asked why EPCA is delayed and whether erosion has been quantified.", "Not quantified yet. BMcD's 10/28 pricing sets the exposed cost per category; then apply low, base, high escalation through the local and state permit dates.", "Categories: commodity pricing, major equipment, contract terms, labor, drain tile scope, final local permit conditions."], "src": "Sylvan RN 2026.09.30"}, {"id": "ll", "lane": "build", "col": 7, "st": "future", "t": "Long-lead POs", "d": "9/3/2027 (P6 5/12/2027)", "det": ["Cash flow: long-lead materials POs 9/3/2027 (P6 5/12/2027).", "Early procurement discussed: Q1 2027 down payments; trackers, substation equipment and inverters around 30%, piles, Shoals and cable nearer 60%."], "src": "Cash Flow 2026.09.24; RN 2026.09.29"}, {"id": "mob", "lane": "build", "col": 8, "st": "future", "t": "Site mobilization", "d": "~3/1/2028", "det": ["March 2028 start based on the MPSC (state) permit; can move left if the local appeal succeeds.", "P6: 4/3/2028."], "src": "Cash Flow 2026.09.24"}, {"id": "con", "lane": "build", "col": 8, "st": "future", "t": "Construction", "d": "2028 to 2029", "det": ["Civil 3/1/2028 to 10/27/2028; piles 5/30/2028 to 11/9/2028; racking 7/29/2028 to 4/29/2029.", "Modules 9/27/2028 to 6/28/2029; inverters 8/29/2028 to 4/29/2029; substation 6/9/2028 to 6/9/2029.", "Commissioning 5/10/2029 to 11/6/2029."], "src": "Cash Flow 2026.09.24"}, {"id": "bf", "lane": "build", "col": 9, "st": "ms", "t": "Backfeed 7/13/2029", "d": "pinned (Frank via Matt)", "det": ["Earliest backfeed 7/13/2029, working date from Frank via Matt.", "P6 finish 7/19/2029."], "src": "Sylvan RN 2026.09.17; Cash Flow 2026.09.24"}, {"id": "cod", "lane": "build", "col": 9, "st": "ms", "t": "COD ~11/1/2029", "d": "end of 2029", "det": ["Cash flow COD 11/1/2029 (P6 11/29/2029). SC 12/15/2029.", "Cash flow shows MC 11/6/2029, after COD; not reconciled."], "src": "Cash Flow 2026.09.24"}], "edges": [{"f": "cmap", "t": "rfp", "why": "constraints map is the core RFP site input"}, {"f": "topo", "t": "rfp", "why": "topo support files went out with Addendum 1"}, {"f": "ease", "t": "cross", "why": "easement limits frame the crossing design"}, {"f": "cross", "t": "tauth", "why": "crossing study feeds MV crossing engineering", "w": 1}, {"f": "cmap", "t": "bmcd", "why": "BMcD prices off the constraints map (hybrid)"}, {"f": "mod", "t": "bmcd", "why": "module specs are BMcD's tech basis"}, {"f": "mod", "t": "aes10", "why": "10% redone with the new module"}, {"f": "rfp", "t": "bmcd", "why": "RFP package"}, {"f": "rfp", "t": "bm", "why": "RFP package"}, {"f": "aes10", "t": "bm", "why": "Barton Malow waits for the AES 10%"}, {"f": "walk", "t": "capex", "why": "site walk informs bidder pricing"}, {"f": "bmcd", "t": "capex", "why": "10/28 update leads to first-week-Nov CapEx"}, {"f": "bmcd", "t": "eros", "why": "BMcD price sets the exposed cost base"}, {"f": "capex", "t": "ppa", "why": "market read going into the PPA RFP", "w": 1}, {"f": "capex", "t": "lvl", "why": "priced bid into leveling"}, {"f": "bm", "t": "lvl", "why": "second price for leveling"}, {"f": "lvl", "t": "caic", "why": "leveled numbers go to CAIC"}, {"f": "cash", "t": "caic", "why": "CAIC needs the cash flow"}, {"f": "caic", "t": "espa", "why": "approval to sign ESPA"}, {"f": "mpsc", "t": "gate", "why": "state path"}, {"f": "cup", "t": "gate", "why": "local path"}, {"f": "gate", "t": "espa", "why": "proceed with ESPA after a positive outcome", "h": 1}, {"f": "gate", "t": "d30", "why": "do not fund ~$3M until favorable", "h": 1}, {"f": "gate", "t": "epca", "why": "permit certainty before signing (or a deliberate risk call)", "h": 1}, {"f": "espa", "t": "d30", "why": "30% design runs under ESPA"}, {"f": "tauth", "t": "d30", "why": "early engineering ahead of 30%"}, {"f": "d30", "t": "bind", "why": "30% is the binding-price point"}, {"f": "d30", "t": "d60", "why": "next design step"}, {"f": "bind", "t": "epca", "why": "binding price into EPCA"}, {"f": "eros", "t": "epca", "why": "cost of waiting vs signing early", "w": 1}, {"f": "ppa", "t": "epca", "why": "PPA signing vs permit and erosion risk", "w": 1}, {"f": "epca", "t": "ll", "why": "EPCA releases long-lead POs"}, {"f": "d60", "t": "ll", "why": "piles, Shoals, cable need ~60%"}, {"f": "ll", "t": "mob", "why": "equipment ahead of mob"}, {"f": "mob", "t": "con", "why": "construction starts"}, {"f": "con", "t": "bf", "why": "substation and collection ready"}, {"f": "bf", "t": "cod", "why": "commissioning to COD"}, {"f": "bmfb", "t": "bm", "why": "schedule response sets the Barton Malow track"}], "conf": {"epca": {"t": "EPCA date", "x": "May 2027 in notes and P6 (5/25/27) vs 9/15/2027 in the cash flow file. P6 also puts EPCA before both permit forecasts (local 7/30/27, state 9/30/27)."}, "espa": {"t": "ESPA vs appeal timing", "x": "The cash flow ESPA window 11/20 to 12/15/2026 spans the 12/3 hearing, but the PIC note says ESPA waits for a positive outcome."}, "topcon": {"t": "Module wording", "x": "PIC slide says '10% Design with TopCon Modules' 10/23, while the 9/30 basis is Imperial Star Orion N ISN8-GPSB132-720/M."}, "lvl": {"t": "Award timing", "x": "Leveling and award 12/25/2026 come from the Copilot-sourced 9/15 working RFP schedule. The 10/5 Barton Malow kickoff recap puts EPC selection in early Q1, around late January or early February."}, "tauth": {"t": "Tech auth status", "x": "Whether the 9/23 limited BMcD technical authorization was executed is not logged."}}, "stories": [{"name": "Where we are today", "ids": ["cmap", "ease", "topo", "mod", "rfp", "cross", "bmcd", "ppa", "cash", "bmfb", "bm"], "html": "<p>Sylvan is in the bid stage. Site inputs are mostly done and the RFP is out to BMcD and Barton Malow on the locked Imperial Star Orion N module.<\/p><p>In progress now: the crossing study, BMcD hybrid pricing (~10/28), the Barton Malow track (kickoff 10/5, timing feedback due end of week), PPA pricing with Consumers and DTE, and the CAIC cash flow.<\/p>"}, {"name": "The permit gate", "ids": ["mpsc", "cup", "gate", "espa", "d30", "epca"], "html": "<p>The big decision is permit certainty, not price. Either the Garfield CUP appeal goes our way (hearing 12/3, best case unappealable Feb 2027) or MPSC issues a siting certificate (filing 10/9).<\/p><p>That gate releases ESPA, the ~$3M 30% design and geotech, binding price and EPCA.<\/p>"}, {"name": "Bid and pricing", "ids": ["rfp", "mod", "aes10", "bmcd", "walk", "bmfb", "capex", "bm", "lvl", "caic", "eros"], "html": "<p>BMcD goes now on the constraints map and module specs (~10/28, high-confidence CapEx first week of Nov). Barton Malow prices after the AES 10% (~10/23): ROM before Thanksgiving, full proposal mid-January. If BMcD is high, CAIC waits for Barton Malow.<\/p>"}, {"name": "Critical path to COD", "ids": ["gate", "espa", "d30", "bind", "epca", "ll", "mob", "con", "bf", "cod"], "html": "<p>Permit gate, ESPA, 30% design, binding price, EPCA, long-lead POs (~9/3/2027), mob (~3/1/2028), construction, backfeed 7/13/2029, COD ~11/1/2029.<\/p>"}, {"name": "Open conflicts", "ids": ["epca", "espa", "mod", "aes10", "lvl", "tauth"], "conf": true, "html": "<p>Items carrying an unresolved conflict in the sources:<\/p>"}], "title": "Sylvan Solar: process map and gates", "h1": "Sylvan Solar: where we are, what depends on what, key gates", "sub": "Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage to see dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave the permit hard gate. An orange \"!\" marks an open conflict.", "today": {"col": 2, "label": "YOU ARE HERE: Tue 10/6"}, "introTitle": "Sylvan Solar today", "intro": "<p>Sylvan is in the <b>bid stage<\/b>. Surveys and constraints are mostly done (constraints map to EPCs 9/18, Consumers 50 ft easement confirmed 9/23, topo MMS via Addendum 1); the crossing study is still open.<\/p><p>The RFP is out on Procore (9/18) to BMcD and Barton Malow (the only two bidders), on the locked Imperial Star Orion N module. BMcD prices now (~10/28, high-confidence CapEx first week of Nov). Barton Malow kicked off 10/5: ROM before Thanksgiving after the AES 10% (~10/23), full proposal mid-January.<\/p><p>The next big decision is <b>permit certainty<\/b>: Garfield CUP appeal hearing 12/3 or the MPSC path (filing 10/9). Until one clears, hold the ~$3M 30% design and geotech. That gate drives ESPA and EPCA timing.<\/p>", "sources": "Sylvan Running Notes and Pillars (Notion, through 2026.10.06); Sylvan Cash Flow 2026.09.24.xlsx. No new analysis."};
+const STAGES = D.stages, LANES = D.lanes, N = D.nodes, E = D.edges, CONF = D.conf || {}, STORIES = D.stories || [];
 const STATUS = {done:"Done", now:"In progress", future:"Future", open:"Open", hard:"Hard gate", soft:"Soft gate", ms:"Milestone"};
 const SCOL = {done:"var(--done)", now:"var(--now)", future:"var(--fut)", open:"var(--open)", hard:"var(--hard)", soft:"var(--soft)", ms:"var(--ms)"};
-
-// col = stage index. st = status. c = open conflict ids.
-const N = [
-  {id:"cmap", lane:"site", col:0, st:"done", t:"Constraints map", d:"Exhibit I2 (9/8), to EPCs 9/18",
-   det:["Exhibit I2 constraints map dated 9/8/2026 is the latest constraints info and supersedes earlier linework, including the March buildable-area line.","Sent to EPCs 9/18 (PIC milestone list).","It was not clearly labeled in the Procore Exhibits folder, which caused confusion on the 9/29 BMcD call."], src:"Sylvan RN 2026.09.29, 2026.09.30 (PIC notes)"},
-  {id:"ease", lane:"site", col:0, st:"done", t:"Consumers crossing easement", d:"50 ft permanent, confirmed 9/23",
-   det:["Consumers (Aisling, 9/23): 50 ft is the permanent easement area, and Consumers can provide additional construction footage for installation.","Still open with Consumers: stacking, engineered fill, proposed depths, ~20 ft deep bore, diagonal 50 ft crossing."], src:"Sylvan RN 2026.09.24"},
-  {id:"topo", lane:"site", col:0, st:"done", t:"Topo / MMS support files", d:"sent via Addendum 1",
-   det:["BMcD was missing the topo support file (.MMS) the AutoCAD surface needs.","Jordan: MMS and crossing exhibits sent via Addendum 1."], src:"Sylvan RN 2026.09.29"},
-  {id:"cross", lane:"site", col:0, st:"now", t:"Crossing study", d:"layout update, agreement scope",
-   det:["Layout update expected about a week after the 9/29 BMcD call, then the crossing agreement scope.","Open items: stacking, engineered fill, depths, ~20 ft bore, diagonal crossing.","Feeds the MV crossing engineering in the limited BMcD technical authorization."], src:"Sylvan RN 2026.09.24, 2026.09.29"},
-  {id:"walk", lane:"site", col:2, st:"future", t:"Site walk Oct 19-23", d:"harvest likely; avoid Nov 1-15",
-   det:["Bid site walk on Oct 19-23 per the 9/15 working RFP schedule.","Crops likely being harvested that week.","Avoid Nov 1-15 (rifle season)."], src:"Sylvan RN 2026.09.24 / 09.28"},
-
-  {id:"mod", lane:"eng", col:1, st:"done", t:"Module basis locked", d:"Imperial Star Orion N, 9/30",
-   det:["Imperial Star Orion N ISN8-GPSB132-720/M.","Replaces the conflicting Qcells 660 and TopCon references."], c:["topcon"], src:"Sylvan RN 2026.09.30"},
-  {id:"aes10", lane:"eng", col:1, st:"future", t:"AES 10% design, new modules", d:"PIC target 10/23",
-   det:["PIC slide: 10/23 10% design with TopCon modules.","10/1 note: 'our 10% is going to take too long' for BMcD's hybrid pricing, so BMcD proceeds off the constraints map instead.","Barton Malow gets the full package after the AES 10%."], c:["topcon"], src:"Sylvan RN 2026.09.30 (PIC), 2026.10.01"},
-  {id:"tauth", lane:"eng", col:5, st:"open", t:"Limited BMcD tech authorization", d:"planned 9/23, execution not logged",
-   det:["Scope: value engineering exploration, MV crossing engineering, Consumers crossing support.","Working schedule had execution on 9/23. Whether it was signed is not logged."], c:["tauth"], src:"Sylvan RN 2026.09.15 schedule, Pillars"},
-  {id:"d30", lane:"eng", col:5, st:"future", t:"30% design + geotech (~$3M)", d:"gated on permit outcome",
-   det:["PIC: wait for a positive outcome before the ~$3M 30% design and geotech.","30% roughly 6-8 weeks after ESPA; 30% to 60% about 10 more weeks, ~16-18 weeks after ESPA in total (Grant, 9/29).","Working conclusion: 30% design is the binding-price point."], src:"Sylvan RN 2026.09.29, 2026.09.30 (PIC)"},
-  {id:"bind", lane:"eng", col:5, st:"future", t:"Binding EPC price", d:"at 30% design",
-   det:["Binding pricing is set at 30% design.","Note: December award precedes the P6 30% milestone."], src:"Sylvan RN 2026.09.30"},
-  {id:"d60", lane:"eng", col:7, st:"future", t:"60% design", d:"~16-18 wks after ESPA",
-   det:["Dalton estimated around early April.","Piles, the Shoals package and additional cable need the design nearer 60% before commitment."], src:"Sylvan RN 2026.09.29"},
-
-  {id:"rfp", lane:"epc", col:1, st:"done", t:"RFP out on Procore 9/18", d:"BMcD and Barton Malow",
-   det:["BMcD released 9/18; Barton Malow invited 9/22.","Bidder O&M building and PLA/CBA correspondence sent 9/29."], src:"Sylvan RN 2026.09.22, 09.29, 09.30"},
-  {id:"bmcd", lane:"epc", col:2, st:"now", t:"BMcD hybrid pricing", d:"updated price ~10/28",
-   det:["10/1: proceed now with BMcD on the constraints map plus module specs (hybrid engineering), not waiting for the AES 10%.","Ben supports this if the proposal includes a site plan update. Risk: BMcD's redesign with the new modules may not match how AES would do it.","Updated pricing targeted 10/28."], src:"Sylvan RN 2026.09.30, 2026.10.01"},
-  {id:"capex", lane:"epc", col:2, st:"future", t:"High-confidence EPC CapEx", d:"first week of November",
-   det:["Higher-confidence EPC CapEx estimate targeted for the first week of November.","Gives a market read going into the PPA RFP."], src:"Sylvan RN 2026.09.29, 2026.10.01"},
-  {id:"bm", lane:"epc", col:2, st:"future", t:"Barton Malow price", d:"after AES 10%, later than BMcD",
-   det:["Barton Malow stays on a separate track and gets the full package after the AES 10% design.","Serves as an independent market check."], src:"Sylvan RN 2026.10.01"},
-  {id:"lvl", lane:"epc", col:3, st:"future", t:"Bid leveling + award rec", d:"through 12/25/2026",
-   det:["Working RFP schedule shows bid leveling through 12/25/2026 and a recommendation to award 12/25.","Copilot-sourced 9/15 schedule; actuals have already drifted from it."], c:["lvl"], src:"Sylvan RN 2026.09.30, Pillars"},
-  {id:"caic", lane:"epc", col:3, st:"soft", t:"SOFT GATE: CAIC", d:"hold if BMcD comes in high",
-   det:["If BMcD comes in high, postpone CAIC until the Barton Malow price is in.","Cash flow for CAIC is still in progress."], src:"Sylvan RN 2026.09.28, 2026.10.01"},
-  {id:"espa", lane:"epc", col:4, st:"future", t:"Execute ESPA", d:"11/20 to 12/15/2026",
-   det:["Cash flow file: Execute ESPA 11/20 to 12/15/2026.","PIC note: wait for hearing, ruling and no appeal to the MI Court of Appeals, then proceed with ESPA, and sign EPCA earlier too."], c:["espa"], src:"Sylvan Cash Flow 2026.09.24; RN 2026.09.30 (PIC)"},
-  {id:"epca", lane:"epc", col:6, st:"open", t:"Execute EPCA", d:"May 2027 vs 9/15/2027",
-   det:["Notes and P6: 5/25/2027. Cash flow file: 9/15/2027.","P6 permit forecasts: local 7/30/27, state 9/30/27. The P6 EPCA date is not linked to the controlling permit path.","Signing before permit certainty is possible as a deliberate risk call (termination and stranded-cost exposure)."], c:["epca"], src:"Sylvan RN 2026.09.30; Cash Flow 2026.09.24"},
-
-  {id:"mpsc", lane:"perm", col:2, st:"future", t:"MPSC application filing", d:"10/9/2026",
-   det:["File Sylvan Solar application to MPSC on 10/9 (PIC upcoming list).","State path backup; P6 state path ~9/30/2027.","MPSC recently approved the first solar facility through its process."], src:"Sylvan RN 2026.09.30 (PIC)"},
-  {id:"cup", lane:"perm", col:4, st:"open", t:"Garfield CUP appeal hearing", d:"12/3/2026",
-   det:["Garfield Township CUP is issued; the open issue is the appeal. AES's motion to intervene was accepted 9/14.","Best case: unappealable permit Feb 2027 if the case is dismissed and not taken to the MI Court of Appeals.","If it goes to the Court of Appeals: a few months of briefing, then a few months for the court to decide whether to take it."], src:"Sylvan RN 2026.09.30 (PIC)"},
-  {id:"gate", lane:"perm", col:4, st:"hard", t:"HARD GATE: permit certainty", d:"CUP appeal won OR MPSC certificate",
-   det:["Local path: Garfield CUP appeal resolved favorably with no further appeal.","State path: MPSC siting certificate.","Either one releases ESPA, the ~$3M 30% design and geotech, binding pricing and EPCA execution.","Funding posture: do not rely only on the issued CUP while the appeal is open."], src:"Sylvan RN 2026.09.30 (PIC)"},
-
-  {id:"ppa", lane:"com", col:2, st:"now", t:"PPA pricing out", d:"Consumers $85.90, DTE $87.70",
-   det:["9/18 submitted $85.90/MWh to Consumers Energy (after Consumers provisional award notification).","9/29 submitted $87.70/MWh 35 yr to DTE Energy. DTE shortlist expected late Oct to early Nov.","Open question: sign the Consumers PPA with permitting still out, accepting erosion risk?"], src:"Sylvan RN 2026.09.30 (PIC)"},
-  {id:"cash", lane:"com", col:3, st:"now", t:"Cash flow for CAIC", d:"in progress",
-   det:["Sylvan Cash Flow 2026.09.24.xlsx (tab 'Sylvan 9-2026 Update') carries the milestone dates used on this map.","The %s lineup is done; the CAIC cash flow is not."], src:"Sylvan RN 2026.09.28; Cash Flow 2026.09.24"},
-  {id:"eros", lane:"com", col:3, st:"open", t:"Erosion not quantified", d:"Dana's question; BMcD price sets base",
-   det:["Dana asked why EPCA is delayed and whether erosion has been quantified.","Not quantified yet. BMcD's 10/28 pricing sets the exposed cost per category; then apply low, base, high escalation through the local and state permit dates.","Categories: commodity pricing, major equipment, contract terms, labor, drain tile scope, final local permit conditions."], src:"Sylvan RN 2026.09.30"},
-
-  {id:"ll", lane:"build", col:7, st:"future", t:"Long-lead POs", d:"9/3/2027 (P6 5/12/2027)",
-   det:["Cash flow: long-lead materials POs 9/3/2027 (P6 5/12/2027).","Early procurement discussed: Q1 2027 down payments; trackers, substation equipment and inverters around 30%, piles, Shoals and cable nearer 60%."], src:"Cash Flow 2026.09.24; RN 2026.09.29"},
-  {id:"mob", lane:"build", col:8, st:"future", t:"Site mobilization", d:"~3/1/2028",
-   det:["March 2028 start based on the MPSC (state) permit; can move left if the local appeal succeeds.","P6: 4/3/2028."], src:"Cash Flow 2026.09.24"},
-  {id:"con", lane:"build", col:8, st:"future", t:"Construction", d:"2028 to 2029",
-   det:["Civil 3/1/2028 to 10/27/2028; piles 5/30/2028 to 11/9/2028; racking 7/29/2028 to 4/29/2029.","Modules 9/27/2028 to 6/28/2029; inverters 8/29/2028 to 4/29/2029; substation 6/9/2028 to 6/9/2029.","Commissioning 5/10/2029 to 11/6/2029."], src:"Cash Flow 2026.09.24"},
-  {id:"bf", lane:"build", col:9, st:"ms", t:"Backfeed 7/13/2029", d:"pinned (Frank via Matt)",
-   det:["Earliest backfeed 7/13/2029, working date from Frank via Matt.","P6 finish 7/19/2029."], src:"Sylvan RN 2026.09.17; Cash Flow 2026.09.24"},
-  {id:"cod", lane:"build", col:9, st:"ms", t:"COD ~11/1/2029", d:"end of 2029",
-   det:["Cash flow COD 11/1/2029 (P6 11/29/2029). SC 12/15/2029.","Cash flow shows MC 11/6/2029, after COD; not reconciled."], src:"Cash Flow 2026.09.24"}
-];
-
-// f -> t, why. h = from the hard gate. w = weak/inferred.
-const E = [
-  {f:"cmap", t:"rfp", why:"constraints map is the core RFP site input"},
-  {f:"topo", t:"rfp", why:"topo support files went out with Addendum 1"},
-  {f:"ease", t:"cross", why:"easement limits frame the crossing design"},
-  {f:"cross", t:"tauth", why:"crossing study feeds MV crossing engineering", w:1},
-  {f:"cmap", t:"bmcd", why:"BMcD prices off the constraints map (hybrid)"},
-  {f:"mod", t:"bmcd", why:"module specs are BMcD's tech basis"},
-  {f:"mod", t:"aes10", why:"10% redone with the new module"},
-  {f:"rfp", t:"bmcd", why:"RFP package"},
-  {f:"rfp", t:"bm", why:"RFP package"},
-  {f:"aes10", t:"bm", why:"Barton Malow waits for the AES 10%"},
-  {f:"walk", t:"capex", why:"site walk informs bidder pricing"},
-  {f:"bmcd", t:"capex", why:"10/28 update leads to first-week-Nov CapEx"},
-  {f:"bmcd", t:"eros", why:"BMcD price sets the exposed cost base"},
-  {f:"capex", t:"ppa", why:"market read going into the PPA RFP", w:1},
-  {f:"capex", t:"lvl", why:"priced bid into leveling"},
-  {f:"bm", t:"lvl", why:"second price for leveling"},
-  {f:"lvl", t:"caic", why:"leveled numbers go to CAIC"},
-  {f:"cash", t:"caic", why:"CAIC needs the cash flow"},
-  {f:"caic", t:"espa", why:"approval to sign ESPA"},
-  {f:"mpsc", t:"gate", why:"state path"},
-  {f:"cup", t:"gate", why:"local path"},
-  {f:"gate", t:"espa", why:"proceed with ESPA after a positive outcome", h:1},
-  {f:"gate", t:"d30", why:"do not fund ~$3M until favorable", h:1},
-  {f:"gate", t:"epca", why:"permit certainty before signing (or a deliberate risk call)", h:1},
-  {f:"espa", t:"d30", why:"30% design runs under ESPA"},
-  {f:"tauth", t:"d30", why:"early engineering ahead of 30%"},
-  {f:"d30", t:"bind", why:"30% is the binding-price point"},
-  {f:"d30", t:"d60", why:"next design step"},
-  {f:"bind", t:"epca", why:"binding price into EPCA"},
-  {f:"eros", t:"epca", why:"cost of waiting vs signing early", w:1},
-  {f:"ppa", t:"epca", why:"PPA signing vs permit and erosion risk", w:1},
-  {f:"epca", t:"ll", why:"EPCA releases long-lead POs"},
-  {f:"d60", t:"ll", why:"piles, Shoals, cable need ~60%"},
-  {f:"ll", t:"mob", why:"equipment ahead of mob"},
-  {f:"mob", t:"con", why:"construction starts"},
-  {f:"con", t:"bf", why:"substation and collection ready"},
-  {f:"bf", t:"cod", why:"commissioning to COD"}
-];
-
-const CONF = {
-  epca:{t:"EPCA date", x:"May 2027 in notes and P6 (5/25/27) vs 9/15/2027 in the cash flow file. P6 also puts EPCA before both permit forecasts (local 7/30/27, state 9/30/27)."},
-  espa:{t:"ESPA vs appeal timing", x:"The cash flow ESPA window 11/20 to 12/15/2026 spans the 12/3 hearing, but the PIC note says ESPA waits for a positive outcome."},
-  topcon:{t:"Module wording", x:"PIC slide says '10% Design with TopCon Modules' 10/23, while the 9/30 basis is Imperial Star Orion N ISN8-GPSB132-720/M."},
-  lvl:{t:"Unverified schedule", x:"Leveling and award on 12/25/2026 come from the Copilot-sourced 9/15 working RFP schedule."},
-  tauth:{t:"Tech auth status", x:"Whether the 9/23 limited BMcD technical authorization was executed is not logged."}
-};
-
-const STORIES = [
-  {name:"Where we are today", ids:["cmap","ease","topo","mod","rfp","cross","bmcd","ppa","cash"],
-   html:"<p>Sylvan is in the bid stage. Site inputs are mostly done and the RFP is out to BMcD and Barton Malow on the locked Imperial Star Orion N module.</p><p>In progress now: the crossing study, BMcD hybrid pricing (~10/28), PPA pricing with Consumers and DTE, and the CAIC cash flow.</p>"},
-  {name:"The permit gate", ids:["mpsc","cup","gate","espa","d30","epca"],
-   html:"<p>The big decision is permit certainty, not price. Either the Garfield CUP appeal goes our way (hearing 12/3, best case unappealable Feb 2027) or MPSC issues a siting certificate (filing 10/9).</p><p>That gate releases ESPA, the ~$3M 30% design and geotech, binding price and EPCA.</p>"},
-  {name:"Bid and pricing", ids:["rfp","mod","aes10","bmcd","walk","capex","bm","lvl","caic","eros"],
-   html:"<p>BMcD goes now on the constraints map and module specs (~10/28, high-confidence CapEx first week of Nov). Barton Malow prices after the AES 10% (~10/23). If BMcD is high, CAIC waits for Barton Malow.</p>"},
-  {name:"Critical path to COD", ids:["gate","espa","d30","bind","epca","ll","mob","con","bf","cod"],
-   html:"<p>Permit gate, ESPA, 30% design, binding price, EPCA, long-lead POs (~9/3/2027), mob (~3/1/2028), construction, backfeed 7/13/2029, COD ~11/1/2029.</p>"},
-  {name:"Open conflicts", ids:["epca","espa","mod","aes10","lvl","tauth"], conf:true,
-   html:"<p>Items carrying an unresolved conflict in the sources:</p>"}
-];
 
 // ---------- layout ----------
 const LANE_LBL_W = 150, COL_W = 250, NODE_W = 214, TOP = 78, VGAP = 14, LANE_PAD = 16;
@@ -294,12 +145,12 @@ STAGES.forEach((s,i)=>{
   g.addEventListener("click", ev=>{ ev.stopPropagation(); selectStage(i); });
   stageEls[s.id] = g;
 });
-// today marker inside stage 3 (Bid), early
-const tx = LANE_LBL_W + 2*COL_W + 8;
+// today marker, placed at the start of the stage holding the current position
+const tx = LANE_LBL_W + D.today.col*COL_W + 8;
 const tg = el("g",{class:"today"});
 el("line",{x1:tx, y1:62, x2:tx, y2:H-10}, tg);
-el("rect",{x:tx-4, y:62, width:150, height:20, rx:10}, tg);
-const tt = el("text",{x:tx+6, y:76}, tg); tt.textContent = "YOU ARE HERE: Mon 10/5";
+el("rect",{x:tx-4, y:62, width:Math.max(150, D.today.label.length*7+12), height:20, rx:10}, tg);
+const tt = el("text",{x:tx+6, y:76}, tg); tt.textContent = D.today.label;
 
 const edgeLayer = el("g");
 E.forEach(e=>{
@@ -378,13 +229,10 @@ function selectStory(s, btn){
 }
 STORIES.forEach(s=>{ const b=document.createElement("button"); b.textContent=s.name; b.onclick=()=>selectStory(s,b); bar.appendChild(b); });
 function intro(){
-  panel.innerHTML = `<h2>Sylvan Solar today</h2>
-  <p>Sylvan is in the <b>bid stage</b>. Surveys and constraints are mostly done (constraints map to EPCs 9/18, Consumers 50 ft easement confirmed 9/23, topo MMS via Addendum 1); the crossing study is still open.</p>
-  <p>The RFP is out on Procore (9/18) to BMcD and Barton Malow, on the locked Imperial Star Orion N module. BMcD prices now (~10/28, high-confidence CapEx first week of Nov); Barton Malow after the AES 10% (~10/23).</p>
-  <p>The next big decision is <b>permit certainty</b>: Garfield CUP appeal hearing 12/3 or the MPSC path (filing 10/9). Until one clears, hold the ~$3M 30% design and geotech. That gate drives ESPA and EPCA timing.</p>
-  <div class="k">Open conflicts</div>${confHtml(Object.keys(CONF))}
+  panel.innerHTML = `<h2>${D.introTitle}</h2>${D.intro}
+  ${Object.keys(CONF).length?`<div class="k">Open conflicts</div>${confHtml(Object.keys(CONF))}`:""}
   <div class="k">How to use</div><ul><li>Click a box to trace what it needs (amber) and what it drives (blue).</li><li>Click a stage header for everything in that window.</li><li>Use Stories for guided views. Tap empty space to reset.</li></ul>
-  <div class="src">Sources: Sylvan Running Notes and Pillars (Notion, through 2026.10.01); Sylvan Cash Flow 2026.09.24.xlsx. No new analysis.</div>`;
+  <div class="src">Sources: ${D.sources}</div>`;
 }
 
 // ---------- pan / zoom (mouse, wheel, touch pinch) ----------
@@ -408,7 +256,7 @@ svg.addEventListener("click", ()=>{ if(moved) return; clear(); intro(); location
 document.getElementById("zi").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(1.25, r.width/2, r.height/2); };
 document.getElementById("zo").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(0.8, r.width/2, r.height/2); };
 document.getElementById("fit").onclick = fit;
-document.getElementById("here").onclick = ()=>{ goToday(); selectStory(STORIES[0], bar.querySelectorAll("button")[0]); };
+document.getElementById("here").onclick = ()=>{ goToday(); if(STORIES.length) selectStory(STORIES[0], bar.querySelectorAll("button")[0]); };
 let lastW = window.innerWidth; window.addEventListener("resize", ()=>{ if(Math.abs(window.innerWidth-lastW)>80){ lastW = window.innerWidth; if(window.innerWidth<900) goToday(); else fit(); } });
 intro(); if(window.innerWidth<900) goToday(); else fit();
 const h0 = location.hash.slice(1); if(byId[h0]) selectNode(h0);
