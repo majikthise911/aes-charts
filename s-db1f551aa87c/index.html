@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
+<title>Hardy Hills BESS: process map and gates</title>
+<style>
+:root{
+  --bg:#0b0f14; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --lane:#0f1620; --lane2:#0b0f14;
+  --card:#111827; --panel:#0f1620; --edge:#475569; --hi:#60a5fa; --up:#fbbf24;
+  --done:#22c55e; --donebg:#0c2a18; --now:#3b82f6; --nowbg:#0d2244; --fut:#64748b;
+  --open:#f97316; --openbg:#341a08; --hard:#ef4444; --hardbg:#3a0d0d; --soft:#f59e0b; --softbg:#352506;
+  --ms:#e2e8f0; --today:#38bdf8;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{display:flex;flex-direction:column;margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;overflow:hidden}
+header{padding:10px 16px 2px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12.5px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px}
+.bar b{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+button{font:inherit;font-size:13px;border:1px solid #334155;background:var(--card);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--hi)}
+button.on{background:var(--hi);border-color:var(--hi);color:#0b0f14}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:0 16px 7px;color:var(--muted);font-size:12px;align-items:center}
+.sw{display:inline-block;width:14px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:2px solid}
+.zoom{margin-left:auto;display:flex;gap:4px;align-items:center}
+.zoom button{padding:3px 10px}
+main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
+#wrap{flex:1;overflow:hidden;min-width:0;position:relative;cursor:grab;touch-action:none;background:var(--bg)}
+#wrap.drag{cursor:grabbing}
+svg{display:block;width:100%;height:100%}
+#panel{width:390px;flex:none;overflow:auto;padding:14px 16px 20px;background:var(--panel);border-left:1px solid var(--line)}
+@media (max-width:900px){main{flex-direction:column}#panel{width:auto;max-height:42vh;border-left:0;border-top:1px solid var(--line)} h1{font-size:15px} .sub{display:none} .bar,.legend{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none} .legend{font-size:11px;gap:9px} .legend .zoom{position:sticky;right:0;background:var(--bg);padding-left:6px} button{padding:4px 10px;font-size:12.5px} header{padding:8px 12px 0}}
+#panel h2{font-size:16px;margin:0 0 4px}
+#panel .meta{color:var(--muted);font-size:12.5px;margin-bottom:8px}
+#panel ul{margin:4px 0 10px;padding-left:18px}
+#panel li{margin:4px 0}
+#panel .k{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:12px}
+#panel .src{color:var(--muted);font-style:italic;font-size:12.5px;margin-top:12px}
+#panel .conf{border-left:3px solid var(--open);background:#1a1208;padding:6px 10px;border-radius:4px;margin:6px 0;font-size:13px}
+#panel p{margin:0 0 8px}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;border:1.5px solid;margin-right:6px;text-transform:uppercase;letter-spacing:.04em}
+.lanebg{fill:var(--lane)} .lanebg.alt{fill:var(--lane2)}
+.lanelbl{fill:var(--muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.stage line{stroke:#334155;stroke-width:1.2;stroke-dasharray:3 5}
+.stage rect{fill:#1e293b;stroke:#334155}
+.stage text{fill:var(--ink);font-weight:700;font-size:12px}
+.stage .d{fill:var(--muted);font-weight:400;font-size:11px}
+.stage{cursor:pointer}
+.stage.sel rect{fill:#1e3a5f;stroke:var(--hi)}
+.node{cursor:pointer}
+.node text{fill:var(--ink);font-size:12.5px}
+.node text.t{font-weight:700}
+.node text.d{fill:var(--muted);font-size:11.5px}
+.node text.tag{font-size:9.5px;font-weight:800;letter-spacing:.06em}
+.node .box{stroke-width:1.6}
+.node.done .box{fill:var(--donebg);stroke:var(--done)} .node.done .tag{fill:var(--done)}
+.node.now .box{fill:var(--nowbg);stroke:var(--now);stroke-width:3} .node.now .tag{fill:var(--now)}
+.node.future .box{fill:transparent;stroke:var(--fut);stroke-dasharray:6 4} .node.future .tag{fill:var(--fut)}
+.node.open .box{fill:var(--openbg);stroke:var(--open);stroke-width:2} .node.open .tag{fill:var(--open)}
+.node.hard .box{fill:var(--hardbg);stroke:var(--hard);stroke-width:3} .node.hard .tag{fill:var(--hard)}
+.node.soft .box{fill:var(--softbg);stroke:var(--soft);stroke-width:2} .node.soft .tag{fill:var(--soft)}
+.node.ms .box{fill:var(--ms);stroke:var(--ms)} .node.ms text{fill:#0b0f14} .node.ms .tag{fill:#334155}
+.node:hover .box{filter:brightness(1.35)}
+.node.sel .box{stroke:var(--hi)!important;stroke-width:3.5!important;stroke-dasharray:none!important}
+.cflag{fill:var(--open)} .cflagt{fill:#0b0f14!important;font-size:10px!important;font-weight:900}
+.edge{fill:none;stroke:var(--edge);stroke-width:1.5;opacity:.7}
+.edge.hardE{stroke:var(--hard);stroke-width:3;opacity:.85}
+.edge.weak{stroke-dasharray:5 4}
+.today line{stroke:var(--today);stroke-width:2;stroke-dasharray:6 4}
+.today rect{fill:var(--today)} .today text{fill:#0b0f14;font-weight:800;font-size:11.5px}
+.dim .node,.dim .stage{opacity:.2}
+.dim .edge{opacity:.07}
+.dim .node.on,.dim .node.sel{opacity:1}
+.dim .edge.on{opacity:1;stroke:var(--hi);stroke-width:2.6}
+.dim .edge.onup{opacity:1;stroke:var(--up);stroke-width:2.6}
+.dim .edge.hardE.on,.dim .edge.hardE.onup{stroke-width:3.5}
+</style>
+</head>
+<body>
+<header>
+  <h1>Hardy Hills BESS: where we are, what depends on what, key gates</h1>
+  <div class="sub">Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage for dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave the ordinance gate. An orange &quot;!&quot; marks an open conflict.</div>
+</header>
+<div class="bar" id="stories"><b>Stories</b></div>
+<div class="legend">
+  <span><span class="sw" style="background:var(--donebg);border-color:var(--done)"></span>Done</span>
+  <span><span class="sw" style="background:var(--nowbg);border-color:var(--now)"></span>In progress</span>
+  <span><span class="sw" style="background:transparent;border-color:var(--fut);border-style:dashed"></span>Future</span>
+  <span><span class="sw" style="background:var(--openbg);border-color:var(--open)"></span>Open / unresolved</span>
+  <span><span class="sw" style="background:var(--hardbg);border-color:var(--hard)"></span>Hard gate</span>
+  <span><span class="sw" style="background:var(--softbg);border-color:var(--soft)"></span>Soft gate</span>
+  <span><span class="sw" style="background:var(--ms);border-color:var(--ms)"></span>Fixed milestone</span>
+  <span><span class="sw" style="background:var(--hi);border-color:var(--hi)"></span>drives (downstream)</span>
+  <span><span class="sw" style="background:var(--up);border-color:var(--up)"></span>needs (upstream)</span>
+  <span class="zoom"><button id="zo">-</button><button id="zi">+</button><button id="fit">Fit</button><button id="here">Today</button></span>
+</div>
+<main><div id="wrap"><svg id="map"><g id="vp"></g></svg></div><div id="panel"></div></main>
+
+<script>
+const D = {"title": "Hardy Hills BESS: process map and gates", "h1": "Hardy Hills BESS: where we are, what depends on what, key gates", "sub": "Status as of Tue 2026-10-06. Stages run left to right, one row per workstream. Click any box or stage for dates, status, what it needs and what it drives. Drag to pan, pinch or scroll to zoom. Thick red arrows leave the ordinance gate. An orange \"!\" marks an open conflict.", "today": {"col": 1, "label": "YOU ARE HERE: Tue 10/6"}, "stages": [{"id": "s1", "label": "1. Studies + site data", "d": "Aug to Oct 2026", "why": "Geotech final, ALTA and title reports in. Hydro draft under review (final by Oct 12 at the latest). Wetlands shapefiles to upload. Species habitat study only partly delivered."}, {"id": "s2", "label": "2. RFP readiness review", "d": "meeting 9/25, due 10/31", "why": "Readiness review meeting held 2026.09.25. Readiness package due 10/31. Items classed binding, non-binding or not needed for the RFP."}, {"id": "s3", "label": "3. Ordinance + constraints map", "d": "constraints map Oct 22", "why": "The draft ordinance gates the constraints map inputs, the permit matrix and the land use permit. Constraints map PDF + ArcGIS for Exhibit I2 on Oct 22 (constraints only)."}, {"id": "s4", "label": "4. 10% design", "d": "Oct 12 to Oct 30 (or Nov 6)", "why": "10% kickoff Oct 12. Final Oct 30, slips to Nov 6 if the ordinance arrives that week."}, {"id": "s5", "label": "5. EPC RFP", "d": "target early Nov 2026", "why": "Target RFP release the first week of November, bidding on the 10% design."}, {"id": "s6", "label": "6. EPC 30% design", "d": "after award", "why": "30% design is handled with the EPC. Crossings and encroachments can only be fully set at 30%."}, {"id": "s7", "label": "7. Permits + GIA", "d": "2027", "why": "Land use permit after the ordinance; 6 to 8 months; all permits possibly Q3 or Q4 2027. GIA moves from Jun 2027 to about Aug 2027."}], "lanes": [{"id": "study", "label": "Studies + site data"}, {"id": "ready", "label": "Readiness + RFP"}, {"id": "design", "label": "Design"}, {"id": "perm", "label": "Permits + regulatory"}, {"id": "land", "label": "Site control + IC"}], "nodes": [{"id": "geo", "lane": "study", "col": 0, "st": "done", "t": "Final geotech", "d": "received; review for design", "det": ["Final geotechnical report received (from ANS); Benton reviewing for a design-considerations summary."], "src": "Unassigned Notes 2026.09.24, 2026.09.25 (Hardy Hills meeting notes)"}, {"id": "alta", "lane": "study", "col": 0, "st": "done", "t": "ALTA + title reports", "d": "received; no mineral issues", "det": ["All title reports received; mineral reports not applicable (no mineral issues, BESS on the same footprint); ALTA survey received.", "150' easement with Clinton County Drain noted on the ALTA."], "src": "Unassigned Notes 2026.09.24, 2026.09.25"}, {"id": "hydro", "lane": "study", "col": 0, "st": "now", "t": "Hydro study", "d": "draft in review; final by Oct 12", "det": ["Hydro study (EVS) in draft and under review.", "Final hydro materials expected by October 12 at the latest."], "src": "Unassigned Notes 2026.09.25; Hardy Hills project page (Next push)"}, {"id": "wet", "lane": "study", "col": 0, "st": "now", "t": "Wetlands delineation", "d": "draft + shapefiles to upload", "det": ["Draft and shapefiles ready; shapefiles still need uploading.", "Megan to prioritize so they go into the data room before the early-November RFP and feed 10% design."], "src": "Unassigned Notes 2026.09.25"}, {"id": "species", "lane": "study", "col": 0, "st": "open", "t": "Species habitat study", "d": "partial; extra scope approved", "det": ["ECT scope miscommunication: only part of the study was delivered.", "Dana: can approve up to $50,000 for the additional work (9/25). Earlier: change order requested, $9,000 (9/24).", "Non-binding for the EPC RFP; 3 to 4 weeks to complete."], "c": ["species"], "src": "Unassigned Notes 2026.09.24, 2026.09.25"}, {"id": "rr", "lane": "ready", "col": 1, "st": "done", "t": "Readiness review meeting", "d": "held 2026.09.25", "det": ["Readiness activities exported from P-Track with a column classing each item binding, non-binding or not needed for the RFP.", "30% design items excluded from this internal review.", "Worksheet saved to Box: Hardy Hills BESS - Readiness Review Worksheet.xlsx."], "src": "Unassigned Notes 2026.09.25, 2026.09.28, 2026.09.30"}, {"id": "rpkg", "lane": "ready", "col": 1, "st": "now", "t": "Readiness package", "d": "due 10/31", "det": ["Readiness package due 10/31 (project page; Tasks Tracker due 2026.10.31).", "Follow-ups: expand the tracker binding / non-binding split; produce a readiness summary from P-Track responses (Jordan).", "P6 schedule draft expected the week after 9/25; risk register ongoing."], "src": "Hardy Hills project page (Blocker); Unassigned Notes 2026.09.25"}, {"id": "pause", "lane": "ready", "col": 1, "st": "open", "t": "Pause risk", "d": "'Sendero' likely to pause unless hurdles met", "det": ["Josh: the Sendero project appeared likely to pause unless it could show it met the required hurdles.", "'Sendero' is kept as written; the notes do not say how it relates to Hardy Hills."], "src": "Unassigned Notes 2026.09.25; Hardy Hills project page (Blocker)"}, {"id": "sitectl", "lane": "land", "col": 1, "st": "open", "t": "Site control: two BESS parcels", "d": "can't be located; waiting on Jose", "det": ["Site control for two parcels associated with the BESS could not be located; waiting for Jose to clarify options.", "Site control documents are needed for the EPC RFP (Exhibit I)."], "src": "Unassigned Notes 2026.09.09, 2026.09.25; Hardy Hills project page (Blocker)"}, {"id": "ord", "lane": "perm", "col": 2, "st": "hard", "t": "HARD GATE: draft ordinance", "d": "gates constraints map, permits", "det": ["The draft ordinance is needed to set the constraints map inputs. Design team needs up to a week to review it.", "Permit matrix and land use permit both wait on it.", "Identified risk: if the constraints map goes to EPCs before ordinance adoption and permit approval, EPC work may be redone and priced higher."], "src": "Unassigned Notes 2026.09.24, 2026.09.25; Hardy Hills project page (Blocker)"}, {"id": "cmap", "lane": "design", "col": 2, "st": "future", "t": "Constraints map (Exhibit I2)", "d": "PDF + ArcGIS, Oct 22", "det": ["Constraints-map PDF and ArcGIS web map for Exhibit I2 scheduled for October 22 (Dana).", "Constraints only, not the full 10% design."], "src": "Unassigned Notes 2026.09.25; Hardy Hills project page (Next push)"}, {"id": "d10", "lane": "design", "col": 3, "st": "future", "t": "10% design", "d": "kickoff Oct 12; final Oct 30 or Nov 6", "det": ["Breyhauna: 10% kickoff October 12. P-Track had listed October 1.", "Final October 30; slips about a week to November 6 if the ordinance arrives that week.", "Internal design goes to 10%, not 30%."], "c": ["kick"], "src": "Unassigned Notes 2026.09.25; Hardy Hills project page (Next push)"}, {"id": "pmx", "lane": "perm", "col": 3, "st": "open", "t": "Permit matrix", "d": "waiting on the ordinance", "det": ["Incomplete; Megan waiting for the ordinance. Could be done by November if the ordinance is drafted soon."], "src": "Unassigned Notes 2026.09.25"}, {"id": "rfp", "lane": "ready", "col": 4, "st": "future", "t": "EPC RFP release", "d": "target early November", "det": ["Target release the first week of November, bidding on the 10% design."], "src": "Unassigned Notes 2026.09.25; Hardy Hills project page (Next push)"}, {"id": "open", "lane": "ready", "col": 4, "st": "open", "t": "Still open for RFP", "d": "named BESS integrator, RUA", "det": ["Project page Next push lists as still open: a named BESS integrator and the RUA."], "src": "Hardy Hills project page (Next push)"}, {"id": "iurc", "lane": "perm", "col": 4, "st": "open", "t": "IURC approval question", "d": "CPCN or 10-7? AES or AES Indiana?", "det": ["Megan: AES Indiana would likely need a CPCN or other IURC approval; unknown if that equals the 10-7 filing, whether AES has obligations, or whether it belongs in the EPC contract.", "Follow-up on Jordan to confirm."], "src": "Unassigned Notes 2026.09.25"}, {"id": "d30", "lane": "design", "col": 5, "st": "future", "t": "30% design with the EPC", "d": "crossings + encroachments set here", "det": ["30% design will be handled with the EPC.", "Crossings and encroachments cannot be fully set until 30%; classed binding for that reason. County road crossing likely existing; substation access, easements and a shared substation agreement remain."], "src": "Unassigned Notes 2026.09.25"}, {"id": "lup", "lane": "perm", "col": 6, "st": "future", "t": "Land use permit", "d": "apply Q1 hoped; permits Q3/Q4 2027", "det": ["Cannot be submitted until the ordinance is final. Team hoped to apply in Q1.", "Process 6 to 8 months, so all permits might not be in hand until Q3 or Q4 2027."], "src": "Unassigned Notes 2026.09.25"}, {"id": "gia", "lane": "land", "col": 6, "st": "open", "t": "GIA", "d": "Jun 2027 slips to ~Aug 2027", "det": ["GIA timing expected to shift from June 2027 to approximately August 2027."], "src": "Unassigned Notes 2026.09.25; Hardy Hills project page (Blocker)"}], "edges": [{"f": "geo", "t": "d10", "why": "geotech feeds design"}, {"f": "hydro", "t": "d10", "why": "final hydro by Oct 12 for design"}, {"f": "wet", "t": "d10", "why": "shapefiles feed 10% design"}, {"f": "wet", "t": "rfp", "why": "shapefiles into the data room"}, {"f": "species", "t": "rfp", "why": "non-binding study for the RFP", "w": 1}, {"f": "alta", "t": "rr", "why": "items marked complete in readiness"}, {"f": "rr", "t": "rpkg", "why": "meeting follow-ups into the package"}, {"f": "rpkg", "t": "rfp", "why": "readiness before release"}, {"f": "pause", "t": "rfp", "why": "project may pause", "w": 1}, {"f": "sitectl", "t": "rfp", "why": "site control docs for Exhibit I"}, {"f": "ord", "t": "cmap", "why": "ordinance sets constraints inputs", "h": 1}, {"f": "ord", "t": "pmx", "why": "permit matrix waits on the ordinance", "h": 1}, {"f": "ord", "t": "lup", "why": "cannot apply until the ordinance is final", "h": 1}, {"f": "cmap", "t": "d10", "why": "constraints map ahead of design"}, {"f": "d10", "t": "rfp", "why": "bid on the 10% design"}, {"f": "open", "t": "rfp", "why": "integrator and RUA open"}, {"f": "iurc", "t": "rfp", "why": "may belong in the EPC contract", "w": 1}, {"f": "rfp", "t": "d30", "why": "EPC takes design to 30%"}, {"f": "pmx", "t": "lup", "why": "matrix ahead of filing"}, {"f": "d30", "t": "gia", "why": "remaining IC requirements depend on final design", "w": 1}, {"f": "sitectl", "t": "gia", "why": "site control and IC depend on design", "w": 1}], "conf": {"kick": {"t": "10% kickoff", "x": "P-Track listed the 10% design kickoff as October 1; Breyhauna gave October 12 at the 9/25 meeting."}, "species": {"t": "Species study cost", "x": "2026.09.24: ECT change order requested, $9,000. 2026.09.25: Dana can approve up to $50,000 for the additional work. Not reconciled."}}, "stories": [{"name": "Where we are today", "ids": ["rr", "rpkg", "pause", "sitectl", "hydro", "wet", "species"], "html": "<p>Hardy Hills (BESS) is in <b>RFP readiness<\/b>. The readiness review meeting was held 9/25 and the package is due 10/31. Studies are mostly in; hydro final by Oct 12; wetlands shapefiles and the rest of the species study are pending. Two BESS parcels lack located site control.<\/p>"}, {"name": "The ordinance gate", "ids": ["ord", "cmap", "pmx", "d10", "lup"], "html": "<p>The draft ordinance drives the constraints map, the permit matrix and the land use permit. If it arrives late, 10% slips from Oct 30 to Nov 6. Permits might not all be in hand until Q3 or Q4 2027.<\/p>"}, {"name": "Path to RFP", "ids": ["cmap", "d10", "rpkg", "open", "iurc", "rfp"], "html": "<p>Constraints map Oct 22, 10% final Oct 30, readiness package 10/31, RFP early November. Still open: named BESS integrator, RUA, and the IURC approval question.<\/p>"}, {"name": "Open conflicts", "ids": ["d10", "species"], "conf": true, "html": "<p>Items carrying an unresolved conflict in the sources:<\/p>"}], "introTitle": "Hardy Hills today", "intro": "<p>Hardy Hills BESS is in <b>RFP readiness<\/b>: review meeting held 9/25, package due 10/31, RFP targeted for the first week of November on a 10% design (kickoff Oct 12).<\/p><p>The <b>draft ordinance<\/b> is the gate: it sets the constraints map (Oct 22), the permit matrix and the land use permit. GIA has slipped to about Aug 2027.<\/p><p>Risk on the page: Josh says the project is likely to pause unless it meets the hurdles.<\/p>", "sources": "Unassigned Notes Hardy Hills entries (2026.09.09 to 2026.10.01, incl. the 2026.09.25 readiness meeting notes) and the Hardy Hills project page (Blocker, Next push). No Running Notes or Pillars exist for this project. No new analysis."};
+const STAGES = D.stages, LANES = D.lanes, N = D.nodes, E = D.edges, CONF = D.conf || {}, STORIES = D.stories || [];
+const STATUS = {done:"Done", now:"In progress", future:"Future", open:"Open", hard:"Hard gate", soft:"Soft gate", ms:"Milestone"};
+const SCOL = {done:"var(--done)", now:"var(--now)", future:"var(--fut)", open:"var(--open)", hard:"var(--hard)", soft:"var(--soft)", ms:"var(--ms)"};
+
+// ---------- layout ----------
+const LANE_LBL_W = 150, COL_W = 250, NODE_W = 214, TOP = 78, VGAP = 14, LANE_PAD = 16;
+const byId = {}; N.forEach(n=>byId[n.id]=n);
+function wrap(txt, max){ const w=txt.split(" "); const lines=[""]; w.forEach(x=>{ if((lines[lines.length-1]+" "+x).trim().length>max) lines.push(x); else lines[lines.length-1]=(lines[lines.length-1]+" "+x).trim(); }); return lines.filter(Boolean); }
+N.forEach(n=>{ n.tl = wrap(n.t, 27); n.dl = wrap(n.d, 32); n.h = 22 + n.tl.length*15 + n.dl.length*14 + 6; });
+const laneY = {}; let y = TOP;
+LANES.forEach(l=>{
+  let maxH = 60;
+  STAGES.forEach((s,c)=>{ const items = N.filter(n=>n.lane===l.id && n.col===c); const h = items.reduce((a,n)=>a+n.h+VGAP,0)-VGAP; maxH = Math.max(maxH,h); });
+  laneY[l.id] = {y, h:maxH + LANE_PAD*2}; y += maxH + LANE_PAD*2;
+});
+const H = y + 20, W = LANE_LBL_W + STAGES.length*COL_W + 20;
+LANES.forEach(l=>{ STAGES.forEach((s,c)=>{ let yy = laneY[l.id].y + LANE_PAD; N.filter(n=>n.lane===l.id && n.col===c).forEach(n=>{ n.x = LANE_LBL_W + c*COL_W + (COL_W-NODE_W)/2; n.y = yy; yy += n.h + VGAP; }); }); });
+
+const svg = document.getElementById("map"), vp = document.getElementById("vp");
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs={}, parent=vp) => { const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; };
+const defs = el("defs",{},svg);
+[["a","#475569"],["ah","#60a5fa"],["au","#fbbf24"],["ar","#ef4444"]].forEach(([id,c])=>{
+  const m = el("marker",{id, viewBox:"0 0 10 10", refX:9, refY:5, markerWidth:5, markerHeight:5, orient:"auto-start-reverse"}, defs);
+  el("path",{d:"M0,0 L10,5 L0,10 z", fill:c}, m);
+});
+LANES.forEach((l,i)=>{
+  el("rect",{class:"lanebg"+(i%2?" alt":""), x:0, y:laneY[l.id].y, width:W, height:laneY[l.id].h});
+  const lines = wrap(l.label, 16);
+  lines.forEach((ln,j)=>{ const t = el("text",{class:"lanelbl", x:14, y:laneY[l.id].y + laneY[l.id].h/2 + 4 + (j-(lines.length-1)/2)*15}); t.textContent = ln; });
+});
+const stageEls = {};
+STAGES.forEach((s,i)=>{
+  const x0 = LANE_LBL_W + i*COL_W, cx = x0 + COL_W/2;
+  const g = el("g",{class:"stage"});
+  el("line",{x1:x0+COL_W, y1:TOP-6, x2:x0+COL_W, y2:H-10}, g);
+  el("rect",{x:x0+10, y:14, width:COL_W-20, height:46, rx:10}, g);
+  const t = el("text",{x:cx, y:33, "text-anchor":"middle"}, g); t.textContent = s.label;
+  const d = el("text",{class:"d", x:cx, y:50, "text-anchor":"middle"}, g); d.textContent = s.d;
+  g.addEventListener("click", ev=>{ ev.stopPropagation(); selectStage(i); });
+  stageEls[s.id] = g;
+});
+// today marker, placed at the start of the stage holding the current position
+const tx = LANE_LBL_W + D.today.col*COL_W + 8;
+const tg = el("g",{class:"today"});
+el("line",{x1:tx, y1:62, x2:tx, y2:H-10}, tg);
+el("rect",{x:tx-4, y:62, width:Math.max(150, D.today.label.length*7+12), height:20, rx:10}, tg);
+const tt = el("text",{x:tx+6, y:76}, tg); tt.textContent = D.today.label;
+
+const edgeLayer = el("g");
+E.forEach(e=>{
+  const a = byId[e.f], b = byId[e.t]; let d;
+  if(a.col === b.col){
+    const up = b.y < a.y;
+    const x1 = a.x + NODE_W/2 + 30, y1 = up ? a.y : a.y + a.h, y2 = up ? b.y + b.h : b.y;
+    d = `M${x1},${y1} L${x1},${y2}`;
+  } else {
+    const s0 = {x:a.x+NODE_W, y:a.y+a.h/2}, t0 = {x:b.x, y:b.y+b.h/2};
+    const mx = (s0.x+t0.x)/2;
+    d = `M${s0.x},${s0.y} C${mx},${s0.y} ${mx},${t0.y} ${t0.x-2},${t0.y}`;
+  }
+  e.el = el("path",{class:"edge"+(e.h?" hardE":"")+(e.w?" weak":""), d, "marker-end":e.h?"url(#ar)":"url(#a)"}, edgeLayer);
+});
+const nodeEls = {};
+N.forEach(n=>{
+  const g = el("g",{class:"node "+n.st, transform:`translate(${n.x},${n.y})`});
+  el("rect",{class:"box", width:NODE_W, height:n.h, rx: n.st==="ms" ? n.h/2 : (n.st==="hard"||n.st==="soft" ? 3 : 8)}, g);
+  if(n.st==="hard"||n.st==="soft"){ el("path",{d:`M0,${n.h/2} L10,0 M0,${n.h/2} L10,${n.h} M${NODE_W},${n.h/2} L${NODE_W-10},0 M${NODE_W},${n.h/2} L${NODE_W-10},${n.h}`, stroke:n.st==="hard"?"var(--hard)":"var(--soft)", "stroke-width":2, fill:"none"}, g); }
+  const px = n.st==="ms" ? 18 : 14;
+  const tag = el("text",{class:"tag", x:px, y:15}, g); tag.textContent = STATUS[n.st].toUpperCase();
+  n.tl.forEach((ln,i)=>{ const t = el("text",{class:"t", x:px, y:32 + i*15}, g); t.textContent = ln; });
+  n.dl.forEach((ln,i)=>{ const t = el("text",{class:"d", x:px, y:32 + n.tl.length*15 + i*14}, g); t.textContent = ln; });
+  if(n.c){ el("circle",{class:"cflag", cx:NODE_W-12, cy:12, r:8}, g); const ct = el("text",{class:"cflagt", x:NODE_W-12, y:15.5, "text-anchor":"middle"}, g); ct.textContent = "!"; }
+  g.addEventListener("click", ev=>{ ev.stopPropagation(); if(!moved) selectNode(n.id); });
+  nodeEls[n.id] = g;
+});
+
+// ---------- interaction ----------
+const panel = document.getElementById("panel");
+const bar = document.getElementById("stories");
+const nameOf = id => byId[id].t;
+const chip = st => `<span class="chip" style="color:${SCOL[st]};border-color:${SCOL[st]}">${STATUS[st]}</span>`;
+function clear(){
+  svg.classList.remove("dim");
+  vp.querySelectorAll(".on,.onup,.sel").forEach(x=>x.classList.remove("on","onup","sel"));
+  bar.querySelectorAll("button").forEach(b=>b.classList.remove("on"));
+}
+function walk(start, dir){
+  const seen = new Set([start]), q = [start], es = [];
+  while(q.length){ const cur = q.shift(); E.forEach(e=>{ const from = dir>0?e.f:e.t, to = dir>0?e.t:e.f; if(from===cur){ es.push(e); if(!seen.has(to)){ seen.add(to); q.push(to); } } }); }
+  return {nodes:seen, edges:es};
+}
+function confHtml(ids){ return (ids||[]).map(c=>`<div class="conf"><b>${CONF[c].t}:</b> ${CONF[c].x}</div>`).join(""); }
+function selectNode(id){
+  clear(); svg.classList.add("dim");
+  const n = byId[id]; nodeEls[id].classList.add("sel");
+  const dn = walk(id,1), upw = walk(id,-1);
+  dn.nodes.forEach(x=>nodeEls[x].classList.add("on")); dn.edges.forEach(e=>e.el.classList.add("on"));
+  upw.nodes.forEach(x=>nodeEls[x].classList.add("on")); upw.edges.forEach(e=>e.el.classList.add("onup"));
+  const ins = E.filter(e=>e.t===id), outs = E.filter(e=>e.f===id);
+  const li = (e, other) => `<li><b>${nameOf(other)}</b>: ${e.why}${e.h?' <i style="color:var(--hard)">(hard gate)</i>':''}${e.w?' <i style="color:var(--muted)">(soft link)</i>':''}</li>`;
+  panel.innerHTML = `<h2>${n.t}</h2><div class="meta">${chip(n.st)} ${STAGES[n.col].label} &middot; ${LANES.find(l=>l.id===n.lane).label}</div>
+    <div><b>${n.d}</b></div>
+    <div class="k">Details</div><ul>${n.det.map(x=>`<li>${x}</li>`).join("")}</ul>
+    ${n.c?`<div class="k">Open conflict</div>${confHtml(n.c)}`:""}
+    <div class="k" style="color:var(--up)">Needs (upstream)</div>${ins.length?`<ul>${ins.map(e=>li(e,e.f)).join("")}</ul>`:`<p style="color:var(--muted)">Nothing upstream on this map.</p>`}
+    <div class="k" style="color:var(--hi)">Drives (downstream)</div>${outs.length?`<ul>${outs.map(e=>li(e,e.t)).join("")}</ul>`:`<p style="color:var(--muted)">End of chain.</p>`}
+    <div class="src">Source: ${n.src}</div>`;
+  location.hash = id;
+}
+function selectStage(i){
+  clear(); svg.classList.add("dim");
+  const s = STAGES[i]; stageEls[s.id].classList.add("sel");
+  const items = N.filter(n=>n.col===i); items.forEach(n=>nodeEls[n.id].classList.add("on"));
+  E.forEach(e=>{ if(byId[e.f].col===i || byId[e.t].col===i) e.el.classList.add("on"); });
+  panel.innerHTML = `<h2>${s.label}</h2><div class="meta">${s.d}</div><p>${s.why}</p><div class="k">In this stage</div><ul>${items.map(n=>`<li>${chip(n.st)}<a href="#${n.id}" style="color:var(--ink)" onclick="selectNode('${n.id}');return false;">${n.t}</a>: ${n.d}</li>`).join("")}</ul>`;
+}
+function selectStory(s, btn){
+  clear(); svg.classList.add("dim"); btn.classList.add("on");
+  s.ids.forEach(id=>nodeEls[id].classList.add("on"));
+  E.forEach(e=>{ if(s.ids.includes(e.f) && s.ids.includes(e.t)) e.el.classList.add("on"); });
+  const confs = s.conf ? Object.keys(CONF) : [];
+  panel.innerHTML = `<h2>${s.name}</h2>${s.html}${confHtml(confs)}<div class="k">Items</div><ul>${s.ids.map(id=>`<li>${chip(byId[id].st)}<a href="#${id}" style="color:var(--ink)" onclick="selectNode('${id}');return false;">${nameOf(id)}</a>: ${byId[id].d}</li>`).join("")}</ul><p style="color:var(--muted);font-size:12.5px">Click any item to trace it.</p>`;
+}
+STORIES.forEach(s=>{ const b=document.createElement("button"); b.textContent=s.name; b.onclick=()=>selectStory(s,b); bar.appendChild(b); });
+function intro(){
+  panel.innerHTML = `<h2>${D.introTitle}</h2>${D.intro}
+  ${Object.keys(CONF).length?`<div class="k">Open conflicts</div>${confHtml(Object.keys(CONF))}`:""}
+  <div class="k">How to use</div><ul><li>Click a box to trace what it needs (amber) and what it drives (blue).</li><li>Click a stage header for everything in that window.</li><li>Use Stories for guided views. Tap empty space to reset.</li></ul>
+  <div class="src">Sources: ${D.sources}</div>`;
+}
+
+// ---------- pan / zoom (mouse, wheel, touch pinch) ----------
+let sc = 1, ox = 0, oy = 0, moved = false;
+const wrapEl = document.getElementById("wrap");
+function apply(){ vp.setAttribute("transform", `translate(${ox},${oy}) scale(${sc})`); }
+function fit(){ const r = wrapEl.getBoundingClientRect(); sc = Math.min(r.width/W, r.height/H); ox = (r.width - W*sc)/2; oy = Math.max(0,(r.height - H*sc)/2); apply(); }
+function zoomAt(f, cx, cy){ const ns = Math.max(0.15, Math.min(4, sc*f)); ox = cx - (cx-ox)*(ns/sc); oy = cy - (cy-oy)*(ns/sc); sc = ns; apply(); }
+function goToday(){ const r = wrapEl.getBoundingClientRect(); sc = Math.max(0.6, Math.min(1, r.height/H*1.6)); ox = r.width*0.35 - (tx)*sc; oy = 10; apply(); }
+wrapEl.addEventListener("wheel", ev=>{ ev.preventDefault(); const r = wrapEl.getBoundingClientRect(); const f = ev.ctrlKey ? Math.exp(-ev.deltaY*0.01) : (ev.deltaY<0?1.12:1/1.12); if(ev.ctrlKey || !ev.shiftKey && Math.abs(ev.deltaY)>Math.abs(ev.deltaX)) zoomAt(f, ev.clientX-r.left, ev.clientY-r.top); else { ox -= ev.deltaX; apply(); } }, {passive:false});
+const ptrs = new Map(); let pinch0 = null, start = null;
+wrapEl.addEventListener("pointerdown", ev=>{ ptrs.set(ev.pointerId, {x:ev.clientX, y:ev.clientY}); moved = false; start = {x:ev.clientX, y:ev.clientY, ox, oy};
+  if(ptrs.size===2){ const [p1,p2] = [...ptrs.values()]; pinch0 = {d:Math.hypot(p1.x-p2.x,p1.y-p2.y), sc, ox, oy, cx:(p1.x+p2.x)/2, cy:(p1.y+p2.y)/2}; } });
+wrapEl.addEventListener("pointermove", ev=>{ if(!ptrs.has(ev.pointerId)) return; ptrs.set(ev.pointerId, {x:ev.clientX, y:ev.clientY});
+  const r = wrapEl.getBoundingClientRect();
+  if(ptrs.size===2 && pinch0){ const [p1,p2] = [...ptrs.values()]; const d = Math.hypot(p1.x-p2.x,p1.y-p2.y); const ns = Math.max(0.15, Math.min(4, pinch0.sc*d/pinch0.d)); const cx = pinch0.cx - r.left, cy = pinch0.cy - r.top; const mx=(p1.x+p2.x)/2 - r.left, my=(p1.y+p2.y)/2 - r.top; ox = mx - (cx-pinch0.ox)*(ns/pinch0.sc); oy = my - (cy-pinch0.oy)*(ns/pinch0.sc); sc = ns; moved = true; apply(); return; }
+  if(ptrs.size===1 && start){ const dx = ev.clientX-start.x, dy = ev.clientY-start.y; if(Math.abs(dx)+Math.abs(dy) > 5){ moved = true; wrapEl.classList.add("drag"); } if(moved){ ox = start.ox + dx; oy = start.oy + dy; apply(); } } });
+function up(ev){ ptrs.delete(ev.pointerId); if(ptrs.size<2) pinch0 = null; if(ptrs.size===0){ wrapEl.classList.remove("drag"); start = null; } else { const p=[...ptrs.values()][0]; start = {x:p.x, y:p.y, ox, oy}; } }
+["pointerup","pointercancel","pointerleave"].forEach(t=>wrapEl.addEventListener(t, up));
+svg.addEventListener("click", ()=>{ if(moved) return; clear(); intro(); location.hash=""; });
+document.getElementById("zi").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(1.25, r.width/2, r.height/2); };
+document.getElementById("zo").onclick = ()=>{ const r=wrapEl.getBoundingClientRect(); zoomAt(0.8, r.width/2, r.height/2); };
+document.getElementById("fit").onclick = fit;
+document.getElementById("here").onclick = ()=>{ goToday(); if(STORIES.length) selectStory(STORIES[0], bar.querySelectorAll("button")[0]); };
+let lastW = window.innerWidth; window.addEventListener("resize", ()=>{ if(Math.abs(window.innerWidth-lastW)>80){ lastW = window.innerWidth; if(window.innerWidth<900) goToday(); else fit(); } });
+intro(); if(window.innerWidth<900) goToday(); else fit();
+const h0 = location.hash.slice(1); if(byId[h0]) selectNode(h0);
+</script>
+</body>
+</html>
